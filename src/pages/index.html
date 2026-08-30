@@ -12,13 +12,17 @@
   --col:min(94ch,100%);
   --pad:clamp(16px,4vw,40px);
   --bar:34px;
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --safe-l:env(safe-area-inset-left,0px);
+  --safe-r:env(safe-area-inset-right,0px);
 }
 *{box-sizing:border-box}
 body{
   margin:0; background:var(--bg); color:var(--fg);
   font-family:var(--mono); font-size:13.5px; line-height:1.62;
   -webkit-font-smoothing:antialiased; overflow-x:hidden;
-  padding-bottom:calc(var(--bar) + 8px);
+  -webkit-text-size-adjust:100%; text-size-adjust:100%;
+  padding-bottom:calc(var(--bar) + var(--safe-b) + 10px);
 }
 a{color:inherit}
 ::selection{background:var(--accent);color:var(--accent-ink)}
@@ -32,7 +36,7 @@ a{color:inherit}
   background:
     radial-gradient(135% 78% at 50% 4%, transparent 0%, color-mix(in oklab,var(--bg) 45%,transparent) 42%, color-mix(in oklab,var(--bg) 88%,transparent) 72%, var(--bg) 100%),
     linear-gradient(to bottom, transparent 0%, color-mix(in oklab,var(--bg) 55%,transparent) 34%, var(--bg) 78%)}
-#scan{position:fixed;inset:-2px;z-index:2;pointer-events:none;opacity:.5;
+#scan{position:fixed;inset:-4px 0;z-index:2;pointer-events:none;opacity:.5;
   background:repeating-linear-gradient(to bottom,
     color-mix(in oklab,var(--bg) 88%,transparent) 0 1px,
     transparent 1px 3px);
@@ -41,9 +45,12 @@ a{color:inherit}
 #glow{position:fixed;inset:0;z-index:2;pointer-events:none;mix-blend-mode:screen;opacity:.5;
   background:radial-gradient(70% 50% at 50% 38%, color-mix(in oklab,var(--accent) 16%,transparent), transparent 70%)}
 
-main{position:relative;z-index:3;width:var(--col);margin:0 auto;padding:0 var(--pad)}
-main::before{content:"";position:absolute;inset:-4% -6% 0;z-index:-1;pointer-events:none;
+main{position:relative;z-index:3;width:var(--col);margin:0 auto;
+  padding:0 calc(var(--pad) + var(--safe-r)) 0 calc(var(--pad) + var(--safe-l))}
+main::before{content:"";position:absolute;inset:-4% 0 0;z-index:-1;pointer-events:none;
   background:radial-gradient(78% 52% at 50% 42%, color-mix(in oklab,var(--bg) 62%,transparent), transparent 76%)}
+/* the soft horizontal bleed is only safe once main is narrower than the viewport */
+@media (min-width:860px){main::before{inset:-4% -6% 0}}
 
 /* ---------- shell primitives ---------- */
 .line{display:flex;gap:.6em;align-items:baseline;flex-wrap:wrap}
@@ -110,9 +117,14 @@ hr.rule{border:0;height:1px;margin:2.2rem 0;
 .item:hover .nm{text-decoration:underline;text-underline-offset:3px}
 .item .ds{color:color-mix(in oklab,var(--fg) 84%,var(--bg));overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px}
 .item .mt{color:var(--faint);font-size:11px;letter-spacing:.1em;text-transform:uppercase;justify-self:end;white-space:nowrap}
-@media (max-width:640px){
-  .item{grid-template-columns:2.2ch 1fr auto}
-  .item .ds{grid-column:2/4;font-size:12px;white-space:normal}
+@media (max-width:680px){
+  /* every cell placed explicitly: .ds alone had a grid-column, which pushed
+     .mt into the 2.2ch gutter and off the left edge of the screen */
+  .item{grid-template-columns:2.2ch minmax(0,1fr) auto;row-gap:0;padding:.34em 0 .4em .1em}
+  .item .br{grid-column:1;grid-row:1}
+  .item .nm{grid-column:2;grid-row:1}
+  .item .mt{grid-column:3;grid-row:1}
+  .item .ds{grid-column:2/4;grid-row:2;font-size:12px;white-space:normal;line-height:1.5}
 }
 
 /* ---------- videos ---------- */
@@ -133,11 +145,17 @@ footer a:hover{color:var(--accent)}
 footer .sig{color:var(--muted)}
 
 /* ---------- status bar ---------- */
-#bar{position:fixed;left:0;right:0;bottom:0;z-index:20;height:var(--bar);
+#bar{position:fixed;left:0;right:0;bottom:0;z-index:20;
+  height:calc(var(--bar) + var(--safe-b));padding-bottom:var(--safe-b);
   display:flex;align-items:stretch;font-size:11.5px;
   background:color-mix(in oklab,var(--bg) 90%,#000);
   border-top:1px solid color-mix(in oklab,var(--fg) 16%,transparent);
   backdrop-filter:blur(8px)}
+/* three-colour theme preview, used by the picker rows */
+.sw{display:inline-flex;flex:0 0 auto;border-radius:2px;overflow:hidden;vertical-align:middle;
+  box-shadow:0 0 0 1px color-mix(in oklab,var(--fg) 26%,transparent)}
+.sw i{display:block;width:9px;height:14px}
+
 #bar .seg{display:flex;align-items:center;gap:.6em;padding:0 .9em;white-space:nowrap}
 #bar .id{background:var(--accent);color:var(--accent-ink);font-weight:800;letter-spacing:.16em}
 #bar .grow{flex:1;min-width:0;color:var(--muted);overflow:hidden;text-overflow:ellipsis}
@@ -165,11 +183,60 @@ footer .sig{color:var(--muted)}
   padding:.4em .8em;color:color-mix(in oklab,var(--fg) 84%,var(--bg))}
 .fzi[data-sel]{background:var(--accent);color:var(--accent-ink)}
 .fzi[data-sel] .md,.fzi[data-sel] .wpn{color:inherit;opacity:.72}
+.fzi .sw i{width:8px;height:12px}
 .fzi .md{color:var(--faint);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase}
 .fzi .wpn{color:var(--muted);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;justify-self:end}
 .fz .ft{padding:.45em .8em;border-top:1px solid color-mix(in oklab,var(--fg) 16%,transparent);
   color:var(--muted);font-size:11px;display:flex;gap:1.2em;flex-wrap:wrap}
 @media (max-width:520px){.fzi .wpn{display:none}}
+
+/* ---------- small screens ----------
+   Desktop layout above is untouched; everything here is an override. */
+@media (max-width:680px){
+  :root{--pad:18px; --bar:44px}          /* 44px keeps the bar buttons tappable */
+  body{font-size:12px}
+  #logo{width:80%}
+  .tagline{font-size:12.5px;margin-top:1.6rem}
+  .lead{font-size:13px;line-height:1.78;margin-top:1rem}
+  .blk{margin-top:clamp(42px,7.5vh,76px)}
+  hr.rule{margin:2.4rem 0}
+  .menu{gap:10px;margin-top:1.8rem}
+
+  /* news: let the headline wrap instead of centring a two-line block */
+  .newsbar{align-items:flex-start;gap:.55em;font-size:10.5px;line-height:1.55}
+  .newsbar .tag,.newsbar .arw{padding-top:.1em}
+
+  .out{padding-top:.75rem}
+  .grp{margin-top:1.7rem}
+  .gline{padding-top:.2em}
+  .gnote{font-size:11px}
+  .item{padding:.5em 0 .55em .1em}
+  .item .ds{line-height:1.55;padding-top:.1em}
+
+  .vids{gap:4px}
+  .vid{padding:.55em .3em}
+  footer{margin-top:clamp(44px,7.5vh,72px);font-size:11px;line-height:1.95}
+
+  /* bar: the theme name takes the slack and truncates rather than pushing */
+  #bar .seg{padding:0 .75em}
+  #bar .id{letter-spacing:.1em}
+  #bar button{padding:0 .8em}
+  #open{flex:1;min-width:0;justify-content:center}
+  #barname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+}
+
+@media (max-width:430px){
+  body{font-size:11.5px}
+  #logo{width:76%}
+  .tagline{font-size:12px}
+  .lead{font-size:12.5px}
+  /* full-width actions: two short buttons side by side read as one broken row */
+  .mrow{width:100%;justify-content:center;padding:.72em 1.05em}
+  .item{column-gap:.6em}
+  .item .mt{font-size:9.5px;letter-spacing:.08em}
+  #bar kbd{display:none}
+  #bar .seg,#bar button{padding:0 .6em}
+}
 
 @media (prefers-reduced-motion:reduce){
   *{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
@@ -214,7 +281,7 @@ footer .sig{color:var(--muted)}
   <span class="seg id">OMARCHY</span>
   <span class="seg grow" id="barwp"></span>
   <button id="prev" title="Previous theme" aria-label="Previous theme">◂</button>
-  <button id="open"><span class="sw" id="barsw"></span><span id="barname"></span><kbd>T</kbd></button>
+  <button id="open"><span id="barname"></span><kbd>T</kbd></button>
   <button id="next" title="Next theme" aria-label="Next theme">▸</button>
 </div>
 
@@ -336,8 +403,6 @@ footer .sig{color:var(--muted)}
   /* ---- react to theme changes ---- */
   OM.onChange(function(t){
     document.getElementById("barname").textContent = t.label;
-    document.getElementById("barsw").innerHTML = t.swatch.map(function(c){
-      return '<i style="background:' + c + '"></i>'; }).join("");
     document.getElementById("barwp").textContent = "wallpaper: " + t.wp + "  ·  mode: " + t.mode + "  ·  press T to change";
     var w = document.getElementById("wp");
     w.style.opacity = t.mode === "light" ? ".55" : ".42";

@@ -40,6 +40,12 @@ card, an arcade CRT, an engineering spec sheet, and an editorial broadside.
   Gather, Back it — each owning a different colour from the active theme.
 - **Type.** JetBrains Mono only, weights 100–800.
 - **Motion.** Scroll-triggered, and the page honours `prefers-reduced-motion`.
+- **Responsive.** The desktop layout is the design; small screens get a single override
+  layer at the end of the stylesheet (`≤680px` and `≤430px`) that shrinks the type,
+  opens up the vertical rhythm, drops the wordmark to 80/76% width, stacks the two
+  actions full-width, and moves each link's tag onto the title row with its description
+  beneath. The status bar respects `env(safe-area-inset-*)`, so it clears the iPhone
+  home indicator.
 
 ## Build
 
