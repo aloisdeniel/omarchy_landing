@@ -1,7 +1,7 @@
 /* ---- Omarchy shared core: theme engine + content model ---- */
 window.OM = (function () {
   var THEMES = __THEMES__;
-  var KEY = "omarchy.theme.v1";
+  var KEY = "omarchy.theme.last";  /* last theme shown, only so a reload does not repeat it */
 
   function lum(h) {
     var r = parseInt(h.slice(1, 3), 16) / 255,
@@ -55,23 +55,22 @@ window.OM = (function () {
     t.swatch.forEach(function (c, i) { s.setProperty("--sw" + (i + 1), c); });
     document.documentElement.setAttribute("data-mode", t.mode);
     document.documentElement.setAttribute("data-omtheme", t.id);
-    try { localStorage.setItem(KEY, t.id); } catch (e) {}
+    try { localStorage.setItem(KEY, t.id); } catch (e) {}  /* may throw in private windows */
     listeners.forEach(function (fn) { fn(t); });
     return t;
   }
 
   function onChange(fn) { listeners.push(fn); if (current) fn(current); }
 
-  function boot(fallbackDark, fallbackLight) {
-    var id = null;
-    try { id = localStorage.getItem(KEY); } catch (e) {}
-    if (!id || !byId[id]) {
-      var root = document.documentElement.getAttribute("data-theme");
-      var light = root === "light" ||
-        (!root && window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches);
-      id = light ? (fallbackLight || "rose-pine") : (fallbackDark || "tokyo-night");
-    }
-    return apply(id);
+  /* Every load lands on a different theme, so the collection is the first thing
+     you see. The previous one is excluded: with 22 themes a plain random pick
+     repeats about one reload in twenty-two, which just reads as broken. */
+  function boot() {
+    var prev = null;
+    try { prev = localStorage.getItem(KEY); } catch (e) {}
+    var pool = THEMES.filter(function (t) { return t.id !== prev; });
+    if (!pool.length) pool = THEMES;
+    return apply(pool[Math.floor(Math.random() * pool.length)].id);
   }
 
   var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;

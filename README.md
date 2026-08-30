@@ -26,6 +26,12 @@ card, an arcade CRT, an engineering spec sheet, and an editorial broadside.
   gradient and the wallpaper. The picker previews each theme as three colours and
   lives in page *chrome*, never as a content section. Press <kbd>T</kbd> to open it,
   <kbd>[</kbd> and <kbd>]</kbd> to step through.
+- **A different theme every load.** The page picks one at random on each visit, so the
+  collection is the first thing you see. `localStorage` holds only the theme you were
+  last shown, and that one is excluded from the next draw — with 22 themes a plain
+  random pick would repeat about one reload in twenty-two, which reads as a bug rather
+  than as chance. A theme you choose by hand holds for that visit and is not restored
+  afterwards.
 - **Wordmark.** The official SVG wordmark from [omarchy.org/brand](https://omarchy.org/brand/),
   refilled at build time with a gradient whose stops are the live theme's CSS variables.
   The gradient is `userSpaceOnUse`, so it sweeps once across the whole wordmark rather
