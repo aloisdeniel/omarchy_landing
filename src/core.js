@@ -136,19 +136,6 @@ window.OM = (function () {
     });
   }
 
-  var LOGO = [
-    "                 ▄▄▄",
-    " ▄█████▄    ▄███████████▄    ▄███████   ▄███████   ▄███████   ▄█   █▄    ▄█   █▄",
-    "███   ███  ███   ███   ███  ███   ███  ███   ███  ███   ███  ███   ███  ███   ███",
-    "███   ███  ███   ███   ███  ███   ███  ███   ███  ███   █▀   ███   ███  ███   ███",
-    "███   ███  ███   ███   ███ ▄███▄▄▄███ ▄███▄▄▄██▀  ███       ▄███▄▄▄███▄ ███▄▄▄███",
-    "███   ███  ███   ███   ███ ▀███▀▀▀███ ▀███▀▀▀▀    ███      ▀▀███▀▀▀███  ▀▀▀▀▀▀███",
-    "███   ███  ███   ███   ███  ███   ███ ██████████  ███   █▄   ███   ███  ▄██   ███",
-    "███   ███  ███   ███   ███  ███   ███  ███   ███  ███   ███  ███   ███  ███   ███",
-    " ▀█████▀    ▀█   ███   █▀   ███   █▀   ███   ███  ███████▀   ███   █▀    ▀█████▀",
-    "                                       ███   █▀"
-  ].join("\n");
-
   var ISO = "https://iso.omarchy.org/omarchy-4.0.1.iso";
 
   /* the 14 destinations, grouped by what you actually came to do.
@@ -214,6 +201,6 @@ window.OM = (function () {
     get current() { return current; },
     reduced: reduced, reveal: reveal, scramble: scramble, type: type,
     lum: lum, ink: ink, readable: readable, contrast: contrast,
-    LOGO: LOGO, GROUPS: GROUPS, VIDEOS: VIDEOS, NEWS: NEWS, COPY: COPY, ISO: ISO
+    GROUPS: GROUPS, VIDEOS: VIDEOS, NEWS: NEWS, COPY: COPY, ISO: ISO
   };
 })();

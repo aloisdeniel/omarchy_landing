@@ -1,225 +1,368 @@
-<title>Omarchy Landing</title>
+<title>Omarchy TTY</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap">
 <style>
-/* light is the base; dark is redefined token-for-token below */
 :root{
-  --ink:#14161f;
-  --ink-2:#4a4f63;
-  --ink-3:#7b8195;
-  --paper:#f3f3f6;
-  --card:#ffffff;
-  --line:#d9dae2;
-  --line-2:#e9eaef;
-  --c1:#4763c9;   /* blue   */
-  --c2:#8455c4;   /* violet */
-  --c3:#1e8a92;   /* teal   */
-  --c4:#4e8a2f;   /* green  */
-  --c5:#b8492f;   /* rust   */
-  --shadow:0 1px 2px rgba(20,22,31,.05),0 10px 26px rgba(20,22,31,.07);
+  --bg:#1a1b26; --fg:#a9b1d6; --accent:#7aa2f7; --accent-ink:#0a0a0a; --dim:#444b6a;
+  --red:#f7768e; --green:#9ece6a; --yellow:#e0af68; --blue:#7aa2f7; --magenta:#ad8ee6; --cyan:#449dab;
   --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-}
-@media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    --ink:#e7e9f2; --ink-2:#a3a8bd; --ink-3:#71768d;
-    --paper:#101219; --card:#181b25; --line:#2b2f3d; --line-2:#22252f;
-    --c1:#7aa2f7; --c2:#bb9af7; --c3:#5cc7c2; --c4:#9ece6a; --c5:#f7768e;
-    --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 32px rgba(0,0,0,.36);
-  }
-}
-:root[data-theme="dark"]{
-  --ink:#e7e9f2; --ink-2:#a3a8bd; --ink-3:#71768d;
-  --paper:#101219; --card:#181b25; --line:#2b2f3d; --line-2:#22252f;
-  --c1:#7aa2f7; --c2:#bb9af7; --c3:#5cc7c2; --c4:#9ece6a; --c5:#f7768e;
-  --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 32px rgba(0,0,0,.36);
+  --muted:color-mix(in oklab,var(--fg) 66%,var(--bg));
+  --faint:color-mix(in oklab,var(--fg) 44%,var(--bg));
+  --col:min(94ch,100%);
+  --pad:clamp(16px,4vw,40px);
+  --bar:34px;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--mono);
-  font-size:14px;line-height:1.65;-webkit-font-smoothing:antialiased}
+body{
+  margin:0; background:var(--bg); color:var(--fg);
+  font-family:var(--mono); font-size:13.5px; line-height:1.62;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+  padding-bottom:calc(var(--bar) + 8px);
+}
 a{color:inherit}
-::selection{background:var(--c1);color:var(--paper)}
-:focus-visible{outline:2px solid var(--c1);outline-offset:3px}
+::selection{background:var(--accent);color:var(--accent-ink)}
 
-.wrap{max-width:1160px;margin:0 auto;padding:clamp(26px,6vw,72px) clamp(18px,4.5vw,52px) clamp(50px,9vh,110px)}
+/* ---------- ambient layers ---------- */
+#wp{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:var(--wallpaper);background-size:cover;background-position:center;
+  opacity:.42;filter:saturate(1.1) contrast(1.02);
+  transition:opacity .5s ease}
+#veil{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:
+    radial-gradient(135% 78% at 50% 4%, transparent 0%, color-mix(in oklab,var(--bg) 45%,transparent) 42%, color-mix(in oklab,var(--bg) 88%,transparent) 72%, var(--bg) 100%),
+    linear-gradient(to bottom, transparent 0%, color-mix(in oklab,var(--bg) 55%,transparent) 34%, var(--bg) 78%)}
+#scan{position:fixed;inset:-2px;z-index:2;pointer-events:none;opacity:.5;
+  background:repeating-linear-gradient(to bottom,
+    color-mix(in oklab,var(--bg) 88%,transparent) 0 1px,
+    transparent 1px 3px);
+  animation:drift 9s linear infinite}
+@keyframes drift{to{transform:translateY(3px)}}
+#glow{position:fixed;inset:0;z-index:2;pointer-events:none;mix-blend-mode:screen;opacity:.5;
+  background:radial-gradient(70% 50% at 50% 38%, color-mix(in oklab,var(--accent) 16%,transparent), transparent 70%)}
+
+main{position:relative;z-index:3;width:var(--col);margin:0 auto;padding:0 var(--pad)}
+main::before{content:"";position:absolute;inset:-4% -6% 0;z-index:-1;pointer-events:none;
+  background:radial-gradient(78% 52% at 50% 42%, color-mix(in oklab,var(--bg) 62%,transparent), transparent 76%)}
+
+/* ---------- shell primitives ---------- */
+.line{display:flex;gap:.6em;align-items:baseline;flex-wrap:wrap}
+.ps1{color:var(--muted);white-space:nowrap;font-weight:500}
+.ps1 b{color:var(--accent);font-weight:700}
+.ps1 i{color:color-mix(in oklab,var(--fg) 70%,var(--bg));font-style:normal}
+.cmd{color:var(--fg);font-weight:600}
+.cmd::after{content:"▌";color:var(--accent);opacity:0;margin-left:1px}
+.line.typing .cmd::after{opacity:1;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.out{padding:.55rem 0 0 0}
+.blk{margin:clamp(40px,7vh,78px) 0 0}
+.blk .out{opacity:0;transform:translateY(6px);transition:opacity .5s ease,transform .5s ease}
+.blk.in .out{opacity:1;transform:none}
+.cmt{color:var(--muted)}
+hr.rule{border:0;height:1px;margin:2.2rem 0;
+  background:repeating-linear-gradient(to right,var(--dim) 0 6px,transparent 6px 12px);opacity:.5}
 
 /* ---------- masthead ---------- */
-header{border-bottom:1px solid var(--line);padding-bottom:clamp(22px,4vh,40px);margin-bottom:clamp(26px,5vh,52px)}
-.eyebrow{display:flex;align-items:center;gap:.8em;margin:0 0 1.1rem;
-  font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--ink-3)}
-.eyebrow .dots{display:flex;gap:3px}
-.eyebrow .dots i{width:7px;height:7px;border-radius:50%;display:block}
-h1{margin:0;font-size:clamp(23px,3.7vw,44px);font-weight:800;letter-spacing:-.045em;
-  line-height:1.08;max-width:20ch;text-wrap:balance}
-h1 em{font-style:normal;font-weight:200;color:var(--ink-2)}
-.sub{margin:1rem 0 0;max-width:70ch;font-size:14px;line-height:1.8;color:var(--ink-2)}
-.sub a{color:var(--c1);text-underline-offset:3px}
+#top{padding-top:clamp(22px,5vh,48px)}
+.newsbar{display:inline-flex;align-items:center;gap:.65em;text-decoration:none;
+  border:1px solid color-mix(in oklab,var(--yellow) 45%,transparent);
+  background:color-mix(in oklab,var(--yellow) 11%,transparent);
+  padding:.34em .8em;font-size:11.5px;letter-spacing:.04em;
+  transition:background .18s ease,transform .18s ease}
+.newsbar:hover{background:color-mix(in oklab,var(--yellow) 20%,transparent);transform:translateX(2px)}
+.newsbar .tag{color:var(--yellow);font-weight:700;letter-spacing:.16em;text-transform:uppercase;font-size:10px}
+.newsbar .arw{color:var(--yellow)}
 
-/* ---------- the shared brief ---------- */
-.brief{display:grid;grid-template-columns:repeat(auto-fit,minmax(196px,1fr));gap:0;
-  margin-top:clamp(22px,4vh,38px);border:1px solid var(--line);border-radius:8px;overflow:hidden;
-  background:var(--card)}
-.brief div{padding:.95em 1.05em;border-right:1px solid var(--line-2)}
-.brief div:last-child{border-right:0}
-.brief h3{margin:0 0 .35rem;font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3)}
-.brief p{margin:0;font-size:12px;line-height:1.6;color:var(--ink-2)}
-.brief b{color:var(--ink);font-weight:700}
+#logo{display:block;width:100%;max-width:660px;height:auto;
+  margin:clamp(20px,4vh,36px) 0 0;
+  filter:drop-shadow(0 0 18px color-mix(in oklab,var(--accent) 34%,transparent))}
+.tagline{margin:1.4rem 0 0;font-size:clamp(13px,1.5vw,16px);letter-spacing:.02em;color:color-mix(in oklab,var(--fg) 88%,var(--bg))}
+.tagline a{color:var(--accent);text-decoration-color:color-mix(in oklab,var(--accent) 45%,transparent);text-underline-offset:3px}
+.lead{margin:.9rem 0 0;max-width:66ch;font-size:clamp(14px,1.55vw,17px);line-height:1.72;
+  color:color-mix(in oklab,var(--fg) 96%,var(--bg))}
+.lead a{color:var(--magenta);font-weight:700;text-decoration-color:color-mix(in oklab,var(--magenta) 50%,transparent);text-underline-offset:3px}
 
-/* ---------- cards ---------- */
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(16px,2.4vw,30px)}
-@media (max-width:820px){.grid{grid-template-columns:1fr}}
-.card{display:flex;flex-direction:column;text-decoration:none;border-radius:10px;overflow:hidden;
-  background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);
-  opacity:0;transform:translateY(16px);
-  transition:opacity .55s cubic-bezier(.2,.85,.3,1),transform .55s cubic-bezier(.2,.85,.3,1),
-             border-color .2s ease,box-shadow .2s ease}
-.card.in{opacity:1;transform:none}
-.card:hover{border-color:var(--ac);
-  box-shadow:0 1px 2px rgba(20,22,31,.05),0 16px 40px color-mix(in oklab,var(--ac) 26%,transparent)}
-.thumb{position:relative;aspect-ratio:16/9;border-bottom:1px solid var(--line);
-  background:color-mix(in oklab,var(--ac) 8%,var(--card));overflow:hidden}
-.thumb svg{position:absolute;inset:0;width:100%;height:100%;display:block}
-.card:hover .thumb svg .lift{transform:translateY(-2px)}
-.thumb svg .lift{transition:transform .3s cubic-bezier(.2,.85,.3,1)}
-.meta{padding:clamp(14px,1.8vw,20px);display:flex;flex-direction:column;gap:.55rem;flex:1}
-.mrow{display:flex;align-items:baseline;gap:.75em}
-.num{font-size:10.5px;font-weight:800;letter-spacing:.14em;color:var(--ac)}
-.card h2{margin:0;font-size:clamp(16px,1.85vw,21px);font-weight:800;letter-spacing:-.028em;color:var(--ink)}
-.thesis{margin:0;font-size:12.5px;line-height:1.7;color:var(--ink-2)}
-.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:auto;padding-top:.35rem}
-.tag{font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;padding:.28em .55em;border-radius:4px;
-  color:var(--ink-2);background:color-mix(in oklab,var(--ac) 11%,transparent);
-  border:1px solid color-mix(in oklab,var(--ac) 26%,transparent)}
-.open{display:flex;align-items:center;gap:.5em;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--ac);font-weight:700;padding-top:.25rem}
-.open .arw{transition:transform .22s ease}
-.card:hover .open .arw{transform:translateX(4px)}
+/* ---------- primary actions: selected menu rows ---------- */
+.menu{display:flex;flex-wrap:wrap;gap:10px;margin-top:1.6rem}
+.mrow{display:inline-flex;align-items:center;gap:.75em;text-decoration:none;
+  padding:.62em 1.05em;border:1px solid var(--accent);
+  background:var(--accent);color:var(--accent-ink);font-weight:700;letter-spacing:.03em;
+  transition:transform .16s ease,box-shadow .16s ease,filter .16s ease}
+.mrow .k{font-size:10.5px;opacity:.72;letter-spacing:.14em;text-transform:uppercase}
+.mrow:hover{transform:translate(-2px,-2px);box-shadow:4px 4px 0 color-mix(in oklab,var(--accent) 40%,transparent)}
+.mrow.ghost{background:transparent;color:var(--fg);border-color:color-mix(in oklab,var(--fg) 32%,transparent)}
+.mrow.ghost:hover{border-color:var(--cyan);color:var(--cyan);box-shadow:4px 4px 0 color-mix(in oklab,var(--cyan) 30%,transparent)}
 
-/* ---------- footnote ---------- */
-.note{margin-top:clamp(30px,5vh,56px);padding-top:clamp(20px,3.4vh,34px);border-top:1px solid var(--line);
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.6rem}
-.note h3{margin:0 0 .45rem;font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3)}
-.note p{margin:0;font-size:12px;line-height:1.75;color:var(--ink-2)}
-.note kbd{font:inherit;font-size:10px;border:1px solid var(--line);border-radius:3px;padding:.08em .38em;
-  background:color-mix(in oklab,var(--ink) 6%,transparent);color:var(--ink)}
+/* ---------- link tree ---------- */
+.tree{margin-top:.2rem}
+.grp{margin-top:1.5rem}
+.grp:first-child{margin-top:.4rem}
+.ghead{display:flex;align-items:baseline;gap:.7em;flex-wrap:wrap}
+.gname{font-weight:800;letter-spacing:.2em;text-transform:uppercase;font-size:11.5px;color:var(--gc)}
+.gnote{color:var(--muted);font-size:12px}
+.gline{margin-top:.35rem;border-left:1px solid color-mix(in oklab,var(--gc) 42%,transparent);padding-left:0}
+.item{display:grid;grid-template-columns:2.2ch minmax(11ch,auto) minmax(0,1fr) auto;gap:0 .9em;align-items:baseline;
+  text-decoration:none;padding:.2em 0 .2em .1em;position:relative;
+  transition:background .15s ease}
+.item:hover{background:color-mix(in oklab,var(--gc) 13%,transparent)}
+.item .br{color:color-mix(in oklab,var(--gc) 65%,transparent)}
+.item .nm{color:var(--gc);font-weight:700}
+.item:hover .nm{text-decoration:underline;text-underline-offset:3px}
+.item .ds{color:color-mix(in oklab,var(--fg) 84%,var(--bg));overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px}
+.item .mt{color:var(--faint);font-size:11px;letter-spacing:.1em;text-transform:uppercase;justify-self:end;white-space:nowrap}
+@media (max-width:640px){
+  .item{grid-template-columns:2.2ch 1fr auto}
+  .item .ds{grid-column:2/4;font-size:12px;white-space:normal}
+}
+
+/* ---------- videos ---------- */
+.vids{display:grid;gap:2px}
+.vid{display:grid;grid-template-columns:3ch minmax(0,1fr) auto;gap:.9em;align-items:baseline;text-decoration:none;
+  padding:.34em .3em;transition:background .15s ease}
+.vid:hover{background:color-mix(in oklab,var(--red) 12%,transparent)}
+.vid .n{color:var(--faint)}
+.vid .t{color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vid:hover .t{color:var(--red)}
+.vid .a{color:var(--muted);font-size:11.5px;white-space:nowrap}
+@media (max-width:600px){.vid{grid-template-columns:3ch 1fr}.vid .a{grid-column:2;font-size:11px}}
+
+/* ---------- footer ---------- */
+footer{margin:clamp(52px,9vh,96px) 0 clamp(28px,5vh,54px);font-size:12px;color:var(--muted);line-height:1.9}
+footer a{color:color-mix(in oklab,var(--fg) 92%,var(--bg));text-underline-offset:3px}
+footer a:hover{color:var(--accent)}
+footer .sig{color:var(--muted)}
+
+/* ---------- status bar ---------- */
+#bar{position:fixed;left:0;right:0;bottom:0;z-index:20;height:var(--bar);
+  display:flex;align-items:stretch;font-size:11.5px;
+  background:color-mix(in oklab,var(--bg) 90%,#000);
+  border-top:1px solid color-mix(in oklab,var(--fg) 16%,transparent);
+  backdrop-filter:blur(8px)}
+#bar .seg{display:flex;align-items:center;gap:.6em;padding:0 .9em;white-space:nowrap}
+#bar .id{background:var(--accent);color:var(--accent-ink);font-weight:800;letter-spacing:.16em}
+#bar .grow{flex:1;min-width:0;color:var(--muted);overflow:hidden;text-overflow:ellipsis}
+#bar button{font:inherit;font-size:11.5px;background:transparent;border:0;cursor:pointer;color:var(--fg);
+  display:flex;align-items:center;gap:.6em;padding:0 .9em;
+  border-left:1px solid color-mix(in oklab,var(--fg) 16%,transparent)}
+#bar button:hover{background:color-mix(in oklab,var(--fg) 12%,transparent)}
+#bar kbd{font:inherit;font-size:10px;border:1px solid color-mix(in oklab,var(--fg) 30%,transparent);
+  padding:.05em .38em;color:var(--muted)}
+@media (max-width:560px){#bar .grow{display:none}}
+
+/* ---------- picker overlay ---------- */
+#ov{position:fixed;inset:0;z-index:40;display:none;place-items:center;padding:16px;
+  background:color-mix(in oklab,var(--bg) 72%,#000);backdrop-filter:blur(6px)}
+#ov[data-open]{display:grid}
+.fz{width:min(680px,100%);max-height:min(74vh,620px);display:flex;flex-direction:column;
+  background:color-mix(in oklab,var(--bg) 96%,#000);
+  border:1px solid var(--accent);box-shadow:0 24px 70px rgba(0,0,0,.6)}
+.fz .hd{display:flex;align-items:center;gap:.6em;padding:.55em .8em;border-bottom:1px solid color-mix(in oklab,var(--fg) 16%,transparent)}
+.fz .hd b{color:var(--accent)}
+.fz input{flex:1;background:transparent;border:0;outline:0;font:inherit;color:var(--fg);font-size:13px}
+.fz .body{overflow-y:auto;padding:4px 0}
+.fzi{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;gap:.8em;align-items:center;
+  width:100%;text-align:left;font:inherit;font-size:12.5px;background:transparent;border:0;cursor:pointer;
+  padding:.4em .8em;color:color-mix(in oklab,var(--fg) 84%,var(--bg))}
+.fzi[data-sel]{background:var(--accent);color:var(--accent-ink)}
+.fzi[data-sel] .md,.fzi[data-sel] .wpn{color:inherit;opacity:.72}
+.fzi .md{color:var(--faint);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase}
+.fzi .wpn{color:var(--muted);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;justify-self:end}
+.fz .ft{padding:.45em .8em;border-top:1px solid color-mix(in oklab,var(--fg) 16%,transparent);
+  color:var(--muted);font-size:11px;display:flex;gap:1.2em;flex-wrap:wrap}
+@media (max-width:520px){.fzi .wpn{display:none}}
 
 @media (prefers-reduced-motion:reduce){
-  *{transition-duration:.001ms!important;animation-duration:.001ms!important}
-  .card{opacity:1;transform:none}
+  *{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
 }
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
 </style>
 
-<div class="wrap">
-  <header>
-    <p class="eyebrow">
-      <span class="dots"><i style="background:var(--c1)"></i><i style="background:var(--c2)"></i><i style="background:var(--c3)"></i></span>
-      omarchy.org · landing page · two directions
-    </p>
-    <h1>Two ways to rebuild <em>the Omarchy landing page.</em></h1>
-    <p class="sub">Same content, same order, same logo and tagline as <a href="https://omarchy.org">omarchy.org</a> today — two different visual arguments for what that page should feel like. Every one is live and fully interactive: pick a theme and the entire page repaints, wallpaper included.</p>
+<div id="wp"></div><div id="veil"></div><div id="glow"></div><div id="scan"></div>
 
-    <div class="brief">
-      <div><h3>Themes</h3><p>All <b>22</b> real Omarchy themes, palettes and wallpapers pulled straight from the repo. The picker previews each as <b>three colours</b>.</p></div>
-      <div><h3>Structure</h3><p>News → logo → tagline → lead → link grid → videos → footer. Unchanged from the live site.</p></div>
-      <div><h3>Buttons</h3><p>The flat row of 14 links becomes <b>four groups</b> — Install, Build, Gather, Back it — each owning a different theme colour.</p></div>
-      <div><h3>Type</h3><p><b>JetBrains Mono</b> throughout, from hairline 100 to 800, doing the work a display face usually would.</p></div>
+<main>
+  <section id="top">
+    <a class="newsbar" id="news" href="#"><span class="tag">News</span><span class="txt"></span><span class="arw">→</span></a>
+    <!--WORDMARK-->
+    <p class="tagline"></p>
+    <p class="lead"></p>
+    <div class="menu">
+      <a class="mrow" id="cta-iso" href="#"><span class="k">↓</span><span>Download ISO 4.0.1</span></a>
+      <a class="mrow ghost" id="cta-man" href="https://omarchy.org/manual/"><span class="k">?</span><span>Read the manual</span></a>
     </div>
-  </header>
+  </section>
 
-  <div class="grid" id="grid"></div>
+  <hr class="rule">
 
-  <div class="note">
-    <div><h3>Try this in each</h3><p>Press <kbd>T</kbd> in the TTY for an fzf theme overlay, or use the filmstrip along the bottom of the Broadside. <kbd>[</kbd> and <kbd>]</kbd> step through themes in both.</p></div>
-    <div><h3>Where the pixels come from</h3><p>Palettes are parsed from each theme's <b>colors.toml</b>; wallpapers are the real backgrounds, re-encoded and embedded so the pages work with no network.</p></div>
-    <div><h3>Still to decide</h3><p>Which of the two carries the brand — and whether the theme picker belongs in a status bar or a persistent rail.</p></div>
+  <section class="blk" data-cmd="omarchy links --tree">
+    <div class="line"><span class="ps1"><b>omarch</b><i>@quattro</i> <span>~</span> $</span><span class="cmd"></span></div>
+    <div class="out"><div class="tree" id="tree"></div></div>
+  </section>
+
+  <section class="blk" data-cmd="omarchy watch --community">
+    <div class="line"><span class="ps1"><b>omarch</b><i>@quattro</i> <span>~</span> $</span><span class="cmd"></span></div>
+    <div class="out"><div class="vids" id="vids"></div></div>
+  </section>
+
+  <footer>
+    <div>Looking to become a partner or patron of Omarchy? Write <a href="mailto:david@omarchy.org">david@omarchy.org</a></div>
+    <div class="sig">Incubated at <a href="https://37signals.com">37signals</a> (makers of <a href="https://basecamp.com">Basecamp</a> and <a href="https://hey.com">HEY</a>) &nbsp;·&nbsp; Sponsored hosting by <a href="https://cloudflare.com">Cloudflare</a></div>
+    <div><a href="https://omarchy.org/brand/">Omarchy is a pending trademark</a></div>
+  </footer>
+</main>
+
+<div id="bar">
+  <span class="seg id">OMARCHY</span>
+  <span class="seg grow" id="barwp"></span>
+  <button id="prev" title="Previous theme" aria-label="Previous theme">◂</button>
+  <button id="open"><span class="sw" id="barsw"></span><span id="barname"></span><kbd>T</kbd></button>
+  <button id="next" title="Next theme" aria-label="Next theme">▸</button>
+</div>
+
+<div id="ov" role="dialog" aria-modal="true" aria-label="Theme picker">
+  <div class="fz">
+    <div class="hd"><b>&gt;</b><input id="fzq" placeholder="filter themes…" autocomplete="off" spellcheck="false"></div>
+    <div class="body" id="fzbody"></div>
+    <div class="ft"><span><kbd>↑↓</kbd> move</span><span><kbd>↵</kbd> apply</span><span><kbd>esc</kbd> close</span><span id="fzcount"></span></div>
   </div>
 </div>
 
+<!--CORE-->
 <script>
 (function(){
-  var C = [
-{ n:"01", t:"Omarchy TTY", ac:"var(--c4)",
-      url:"tty/",
-      thesis:"The page is a terminal session. Each block types its own command, then the output decodes out of ASCII noise. Links are a coloured tree; the theme picker is an fzf overlay off a tmux status bar.",
-      tags:["Terminal","fzf picker","ASCII decode"],
-      art:'<rect class="bg"/><g class="lift">'+
-          '<rect x="18" y="16" width="52" height="5" rx="1.5" fill="var(--ac)" opacity=".8"/>'+
-          '<rect x="18" y="28" width="130" height="14" rx="2" fill="currentColor" opacity=".2"/>'+
-          '<rect x="18" y="50" width="86" height="4" rx="1.5" fill="currentColor" opacity=".3"/>'+
-          '<rect x="18" y="60" width="60" height="4" rx="1.5" fill="currentColor" opacity=".18"/>'+
-          '<rect x="18" y="76" width="30" height="9" rx="2" fill="var(--ac)"/>'+
-          '<rect x="53" y="76" width="34" height="9" rx="2" fill="none" stroke="currentColor" stroke-opacity=".3"/>'+
-          '<path d="M22 98v24M22 104h8M22 112h8M22 120h8" stroke="var(--c1)" stroke-width="1.2" fill="none" opacity=".85"/>'+
-          '<path d="M96 98v24M96 104h8M96 112h8M96 120h8" stroke="var(--c2)" stroke-width="1.2" fill="none" opacity=".85"/>'+
-          '<rect x="34" y="102" width="40" height="3" rx="1.5" fill="currentColor" opacity=".28"/>'+
-          '<rect x="34" y="110" width="46" height="3" rx="1.5" fill="currentColor" opacity=".28"/>'+
-          '<rect x="34" y="118" width="34" height="3" rx="1.5" fill="currentColor" opacity=".28"/>'+
-          '<rect x="108" y="102" width="42" height="3" rx="1.5" fill="currentColor" opacity=".28"/>'+
-          '<rect x="108" y="110" width="36" height="3" rx="1.5" fill="currentColor" opacity=".28"/>'+
-          '<rect x="108" y="118" width="44" height="3" rx="1.5" fill="currentColor" opacity=".28"/>'+
-          '</g><rect x="0" y="132" width="240" height="12" fill="var(--ac)" opacity=".22"/>'+
-          '<rect x="6" y="135" width="26" height="6" rx="1" fill="var(--ac)"/>' },
+  var C = OM.COPY;
 
-{ n:"02", t:"Omarchy Broadside", ac:"var(--c2)",
-      url:"broadside/",
-      thesis:"An editorial poster. The wallpaper runs full bleed at full strength, the type goes very large and very light, and a filmstrip of all 22 wallpapers sits permanently along the bottom edge.",
-      tags:["Full bleed","Filmstrip rail","Halftone wipe"],
-      art:'<defs><linearGradient id="g6" x1="0" y1="0" x2="1" y2="1">'+
-          '<stop offset="0" stop-color="var(--c1)" stop-opacity=".5"/>'+
-          '<stop offset=".55" stop-color="var(--c2)" stop-opacity=".42"/>'+
-          '<stop offset="1" stop-color="var(--c4)" stop-opacity=".38"/></linearGradient></defs>'+
-          '<rect x="0" y="0" width="240" height="144" fill="url(#g6)"/>'+
-          '<rect x="0" y="0" width="150" height="144" fill="var(--card)" opacity=".72"/>'+
-          '<g class="lift">'+
-          '<rect x="16" y="16" width="70" height="6" rx="3" fill="var(--ac)" opacity=".55"/>'+
-          '<rect x="16" y="30" width="112" height="16" rx="2" fill="currentColor" opacity=".26"/>'+
-          '<rect x="16" y="54" width="120" height="10" rx="2" fill="currentColor" opacity=".42"/>'+
-          '<rect x="16" y="68" width="92" height="10" rx="2" fill="currentColor" opacity=".42"/>'+
-          '<rect x="16" y="86" width="66" height="4" rx="2" fill="currentColor" opacity=".2"/>'+
-          '<rect x="16" y="96" width="52" height="4" rx="2" fill="currentColor" opacity=".2"/>'+
-          '<rect x="16" y="108" width="44" height="11" rx="2" fill="var(--ac)"/>'+
-          '<rect x="66" y="108" width="40" height="11" rx="2" fill="none" stroke="currentColor" stroke-opacity=".35"/>'+
-          '</g>'+
-          '<rect x="0" y="128" width="240" height="16" fill="var(--card)" opacity=".9"/>'+
-          '<rect x="6" y="131" width="16" height="10" rx="1.5" fill="var(--ac)"/>'+
-          '<rect x="26" y="131" width="16" height="10" rx="1.5" fill="var(--c1)" opacity=".45"/>'+
-          '<rect x="46" y="131" width="16" height="10" rx="1.5" fill="var(--c2)" opacity=".45"/>'+
-          '<rect x="66" y="131" width="16" height="10" rx="1.5" fill="var(--c3)" opacity=".45"/>'+
-          '<rect x="86" y="131" width="16" height="10" rx="1.5" fill="var(--c5)" opacity=".45"/>'+
-          '<rect x="106" y="131" width="16" height="10" rx="1.5" fill="var(--c4)" opacity=".45"/>'+
-          '<rect x="126" y="131" width="16" height="10" rx="1.5" fill="var(--c1)" opacity=".28"/>'+
-          '<rect x="146" y="131" width="16" height="10" rx="1.5" fill="var(--c2)" opacity=".28"/>'+
-          '<rect x="166" y="131" width="16" height="10" rx="1.5" fill="var(--c3)" opacity=".28"/>'+
-          '<rect x="186" y="131" width="16" height="10" rx="1.5" fill="var(--c5)" opacity=".28"/>'+
-          '<rect x="206" y="131" width="16" height="10" rx="1.5" fill="var(--c4)" opacity=".28"/>' }
-  ];
+  /* ---- masthead ---- */
+  document.querySelector("#news .txt").textContent = OM.NEWS.label;
+  document.getElementById("news").href = OM.NEWS.href;
+  document.querySelector(".tagline").innerHTML =
+    C.tagline + ' <a href="' + C.taglineHref + '">' + C.taglineName + '</a>';
+  document.querySelector(".lead").innerHTML =
+    C.lead + ' <a href="' + C.leadCtaHref + '">' + C.leadCta + "</a>" + C.leadTail;
+  document.getElementById("cta-iso").href = OM.ISO;
 
-  document.getElementById("grid").innerHTML = C.map(function(c){
-    return '<a class="card" href="'+c.url+'" style="--ac:'+c.ac+'">'+
-      '<div class="thumb"><svg viewBox="0 0 240 144" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Layout sketch">'+
-        c.art.replace('<rect class="bg"/>','') +
-      '</svg></div>'+
-      '<div class="meta">'+
-        '<div class="mrow"><span class="num">'+c.n+'</span><h2>'+c.t+'</h2></div>'+
-        '<p class="thesis">'+c.thesis+'</p>'+
-        '<div class="tags">'+c.tags.map(function(t){ return '<span class="tag">'+t+'</span>'; }).join("")+'</div>'+
-        '<span class="open">Open <span class="arw">→</span></span>'+
-      '</div></a>';
-  }).join("");
+  /* ---- link tree ---- */
+  var tree = document.getElementById("tree");
+  OM.GROUPS.forEach(function(g){
+    var d = document.createElement("div");
+    d.className = "grp"; d.style.setProperty("--gc","var(--" + g.hue + "-lit)");
+    var h = document.createElement("div");
+    h.className = "ghead";
+    h.innerHTML = '<span class="gname">' + g.title + '</span><span class="gnote">' + g.note + "</span>";
+    d.appendChild(h);
+    var w = document.createElement("div"); w.className = "gline";
+    g.links.forEach(function(l,i){
+      var last = i === g.links.length - 1;
+      var a = document.createElement("a");
+      a.className = "item"; a.href = l.href;
+      a.innerHTML = '<span class="br">' + (last ? "└─" : "├─") + '</span>' +
+        '<span class="nm">' + l.label + '</span>' +
+        '<span class="ds">' + l.desc + '</span>' +
+        '<span class="mt">' + l.meta + "</span>";
+      w.appendChild(a);
+    });
+    d.appendChild(w); tree.appendChild(d);
+  });
 
-  var reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var cards = document.querySelectorAll(".card");
-  if (reduced) { Array.prototype.forEach.call(cards, function(c){ c.classList.add("in"); }); }
-  else {
-    var io = new IntersectionObserver(function(es){
-      es.forEach(function(e){
-        if (!e.isIntersecting) return;
-        var i = Array.prototype.indexOf.call(cards, e.target);
-        setTimeout(function(){ e.target.classList.add("in"); }, (i % 2) * 90);
-        io.unobserve(e.target);
-      });
-    }, { threshold:.12, rootMargin:"0px 0px -8% 0px" });
-    Array.prototype.forEach.call(cards, function(c){ io.observe(c); });
+  /* ---- videos ---- */
+  var vids = document.getElementById("vids");
+  OM.VIDEOS.forEach(function(v,i){
+    var a = document.createElement("a");
+    a.className = "vid"; a.href = "https://www.youtube.com/watch?v=" + v.id;
+    a.innerHTML = '<span class="n">' + String(i+1).padStart(2,"0") + '</span>' +
+      '<span class="t">' + v.title + '</span><span class="a">' + v.by + "</span>";
+    vids.appendChild(a);
+  });
+
+  /* ---- theme list + picker ---- */
+  function swatch(t){
+    return '<span class="sw">' + t.swatch.map(function(c){
+      return '<i style="background:' + c + '"></i>'; }).join("") + "</span>";
+  }
+  var ov = document.getElementById("ov"), fzq = document.getElementById("fzq"),
+      fzbody = document.getElementById("fzbody"), sel = 0, shown = OM.themes.slice();
+
+  function renderFz(){
+    var q = fzq.value.trim().toLowerCase();
+    shown = OM.themes.filter(function(t){
+      return !q || (t.label + " " + t.id + " " + t.wp).toLowerCase().indexOf(q) > -1; });
+    if (sel >= shown.length) sel = Math.max(0, shown.length - 1);
+    fzbody.innerHTML = "";
+    shown.forEach(function(t,i){
+      var b = document.createElement("button");
+      b.className = "fzi"; b.type = "button";
+      if (i === sel) b.setAttribute("data-sel","");
+      b.innerHTML = swatch(t) + '<span class="md">' + t.mode + '</span><span>' + t.label +
+        '</span><span class="wpn">' + t.wp + "</span>";
+      b.onmouseenter = function(){ sel = i; paintSel(); };
+      b.onclick = function(){ OM.apply(t.id); close(); };
+      fzbody.appendChild(b);
+    });
+    document.getElementById("fzcount").textContent = shown.length + "/" + OM.themes.length;
+  }
+  function paintSel(){
+    Array.prototype.forEach.call(fzbody.children, function(c,i){
+      if (i === sel) c.setAttribute("data-sel",""); else c.removeAttribute("data-sel"); });
+    var n = fzbody.children[sel]; if (n) n.scrollIntoView({block:"nearest"});
+  }
+  function open(){
+    ov.setAttribute("data-open",""); fzq.value = ""; 
+    sel = Math.max(0, OM.themes.findIndex(function(t){ return t.id === OM.current.id; }));
+    renderFz(); paintSel(); fzq.focus();
+  }
+  function close(){ ov.removeAttribute("data-open"); }
+  document.getElementById("open").onclick = open;
+  ov.onclick = function(e){ if (e.target === ov) close(); };
+  fzq.oninput = function(){ sel = 0; renderFz(); };
+  fzq.onkeydown = function(e){
+    if (e.key === "ArrowDown"){ e.preventDefault(); sel = Math.min(shown.length-1, sel+1); paintSel(); }
+    else if (e.key === "ArrowUp"){ e.preventDefault(); sel = Math.max(0, sel-1); paintSel(); }
+    else if (e.key === "Enter"){ e.preventDefault(); if (shown[sel]){ OM.apply(shown[sel].id); close(); } }
+    else if (e.key === "Escape"){ close(); }
+  };
+  function step(d){
+    var i = OM.themes.findIndex(function(t){ return t.id === OM.current.id; });
+    OM.apply(OM.themes[(i + d + OM.themes.length) % OM.themes.length].id);
+  }
+  document.getElementById("prev").onclick = function(){ step(-1); };
+  document.getElementById("next").onclick = function(){ step(1); };
+  addEventListener("keydown", function(e){
+    if (ov.hasAttribute("data-open")) return;
+    if (e.target.tagName === "INPUT") return;
+    if (e.key === "t" || e.key === "T"){ e.preventDefault(); open(); }
+    if (e.key === "[") step(-1);
+    if (e.key === "]") step(1);
+  });
+
+  /* ---- react to theme changes ---- */
+  OM.onChange(function(t){
+    document.getElementById("barname").textContent = t.label;
+    document.getElementById("barsw").innerHTML = t.swatch.map(function(c){
+      return '<i style="background:' + c + '"></i>'; }).join("");
+    document.getElementById("barwp").textContent = "wallpaper: " + t.wp + "  ·  mode: " + t.mode + "  ·  press T to change";
+    var w = document.getElementById("wp");
+    w.style.opacity = t.mode === "light" ? ".55" : ".42";
+  });
+  OM.boot("tokyo-night","rose-pine");
+
+  /* ---- scroll choreography: type the command, then decode the output ---- */
+  var blocks = document.querySelectorAll(".blk");
+  OM.reveal(blocks, { each: function(n){
+    var line = n.querySelector(".line"), cmd = n.querySelector(".cmd");
+    line.classList.add("typing");
+    OM.type(cmd, n.dataset.cmd, 26).then(function(){
+      setTimeout(function(){ line.classList.remove("typing"); }, 900);
+    });
+    var texts = n.querySelectorAll(".gname, .vid .t, .cmt");
+    Array.prototype.forEach.call(texts, function(el, i){
+      var txt = el.textContent;
+      setTimeout(function(){ OM.scramble(el, txt, { speed: 2.4, spread: 10 }); }, 180 + i * 55);
+    });
+  }});
+
+  /* hero decodes on load */
+  if (!OM.reduced) {
+    var tag = document.querySelector(".tagline a");
+    setTimeout(function(){ OM.scramble(tag, tag.textContent, { speed: .6, spread: 4 }); }, 420);
   }
 })();
 </script>
