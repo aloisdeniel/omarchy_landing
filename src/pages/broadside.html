@@ -1,0 +1,311 @@
+<title>Omarchy Broadside</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap">
+<style>
+:root{
+  --bg:#1a1b26; --fg:#a9b1d6; --accent:#7aa2f7; --accent-ink:#0a0a0a; --dim:#444b6a;
+  --red:#f7768e; --green:#9ece6a; --yellow:#e0af68; --blue:#7aa2f7; --magenta:#ad8ee6; --cyan:#449dab;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --muted:color-mix(in oklab,var(--fg) 76%,var(--bg));
+  --faint:color-mix(in oklab,var(--fg) 54%,var(--bg));
+  --m:clamp(20px,6.5vw,120px);
+  --rail:78px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--mono);
+  font-size:14px;line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+  padding-bottom:var(--rail);transition:background-color .8s ease,color .8s ease}
+a{color:inherit}
+::selection{background:var(--accent);color:var(--accent-ink)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+/* ---------- crossfading wallpaper ---------- */
+.bg{position:fixed;inset:0;z-index:0;background-size:cover;background-position:center;
+  opacity:0;transition:opacity 1s cubic-bezier(.4,0,.2,1);transform:scale(1.02)}
+.bg.on{opacity:1}
+#tint{position:fixed;inset:0;z-index:1;pointer-events:none;transition:background .8s ease;
+  background:
+    linear-gradient(100deg,
+      color-mix(in oklab,var(--bg) 94%,transparent) 0%,
+      color-mix(in oklab,var(--bg) 86%,transparent) 34%,
+      color-mix(in oklab,var(--bg) 52%,transparent) 66%,
+      color-mix(in oklab,var(--bg) 20%,transparent) 100%),
+    linear-gradient(to bottom, color-mix(in oklab,var(--bg) 42%,transparent), transparent 26%, transparent 74%, color-mix(in oklab,var(--bg) 46%,transparent))}
+/* a halftone wipe crosses the screen whenever the theme changes */
+#dither{position:fixed;inset:0;z-index:2;pointer-events:none;opacity:0;
+  background-image:radial-gradient(circle at center, color-mix(in oklab,var(--bg) 94%,transparent) 44%, transparent 46%);
+  background-size:6px 6px}
+#dither.go{animation:wipe 1s cubic-bezier(.35,0,.25,1)}
+@keyframes wipe{
+  0%{opacity:0;-webkit-mask-image:linear-gradient(to bottom,#000 0%,transparent 0%);mask-image:linear-gradient(to bottom,#000 0%,transparent 0%)}
+  45%{opacity:1;-webkit-mask-image:linear-gradient(to bottom,#000 60%,transparent 76%);mask-image:linear-gradient(to bottom,#000 60%,transparent 76%)}
+  100%{opacity:0;-webkit-mask-image:linear-gradient(to bottom,#000 100%,transparent 116%);mask-image:linear-gradient(to bottom,#000 100%,transparent 116%)}
+}
+
+main{position:relative;z-index:3;padding:0 var(--m)}
+section{max-width:1180px}
+.rv{opacity:0;transform:translateY(22px);transition:opacity .75s cubic-bezier(.16,.9,.3,1),transform .75s cubic-bezier(.16,.9,.3,1)}
+.rv.in{opacity:1;transform:none}
+.rule{height:1px;background:color-mix(in oklab,var(--fg) 20%,transparent);margin:clamp(38px,7vh,80px) 0;
+  max-width:1180px;transform-origin:left;transform:scaleX(0);transition:transform .9s cubic-bezier(.16,.9,.3,1)}
+.rule.in{transform:scaleX(1)}
+.kicker{display:flex;align-items:center;gap:.85em;margin:0 0 clamp(12px,2vh,22px);
+  font-size:10.5px;letter-spacing:.32em;text-transform:uppercase;color:var(--faint)}
+.kicker .no{color:var(--pc,var(--accent));font-weight:800}
+.kicker .ln{display:block;width:clamp(24px,5vw,64px);height:1px;background:var(--pc,var(--accent));opacity:.85}
+
+/* ---------- masthead ---------- */
+#top{min-height:calc(100svh - var(--rail));display:grid;align-content:center;
+  padding:clamp(52px,9vh,104px) 0 clamp(40px,7vh,86px)}
+.flash{display:inline-flex;align-items:center;gap:.7em;text-decoration:none;width:max-content;max-width:100%;
+  margin-bottom:clamp(16px,2.6vh,30px);font-size:11.5px;padding:.42em .85em;border-radius:99px;
+  backdrop-filter:blur(10px);background:color-mix(in oklab,var(--bg) 66%,transparent);
+  border:1px solid color-mix(in oklab,var(--green) 52%,transparent);transition:background .2s ease}
+.flash b{color:var(--green-lit,var(--green));font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;white-space:nowrap}
+.flash span.t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.flash:hover{background:color-mix(in oklab,var(--green) 22%,transparent)}
+#logo{margin:0;white-space:pre;font-weight:700;font-size:clamp(3.4px,1.6vw,17px);line-height:1.02;
+  color:var(--fg);text-shadow:0 2px 30px color-mix(in oklab,var(--bg) 94%,transparent);
+  overflow-x:auto;overflow-y:hidden}
+@media (max-width:620px){#logo{font-size:max(3.2px,2.5vw)}}
+h1.tag{margin:clamp(18px,3.2vh,38px) 0 0;font-size:clamp(22px,4.6vw,60px);font-weight:800;
+  letter-spacing:-.05em;line-height:1.03;max-width:15ch;text-wrap:balance;color:var(--fg)}
+h1.tag a{color:var(--accent);text-decoration:none;
+  box-shadow:inset 0 -.09em 0 color-mix(in oklab,var(--accent) 60%,transparent)}
+h1.tag a:hover{background:color-mix(in oklab,var(--accent) 22%,transparent)}
+.lead{margin:clamp(14px,2.6vh,28px) 0 0;max-width:52ch;font-size:clamp(14px,1.65vw,18px);
+  font-weight:200;line-height:1.78;color:color-mix(in oklab,var(--fg) 96%,var(--bg))}
+.lead a{color:var(--magenta);font-weight:800;text-decoration:none;
+  box-shadow:inset 0 -.09em 0 color-mix(in oklab,var(--magenta) 60%,transparent)}
+.go{display:flex;flex-wrap:wrap;gap:11px;margin-top:clamp(22px,3.6vh,40px)}
+.btn{display:inline-flex;align-items:baseline;gap:.75em;text-decoration:none;border-radius:2px;
+  padding:.8em 1.3em;font-weight:800;font-size:13.5px;letter-spacing:.02em;
+  background:var(--accent);color:var(--accent-ink);border:1.5px solid var(--accent);
+  transition:transform .2s cubic-bezier(.2,.9,.25,1),box-shadow .2s ease}
+.btn:hover{transform:translateY(-3px);box-shadow:0 14px 32px color-mix(in oklab,var(--accent) 45%,transparent)}
+.btn .sz{font-size:10px;letter-spacing:.13em;text-transform:uppercase;opacity:.7}
+.btn.o{background:color-mix(in oklab,var(--bg) 58%,transparent);color:var(--fg);backdrop-filter:blur(10px);
+  border-color:color-mix(in oklab,var(--fg) 42%,transparent)}
+.btn.o:hover{border-color:var(--yellow);color:var(--yellow-lit,var(--yellow));
+  box-shadow:0 14px 32px color-mix(in oklab,var(--yellow) 30%,transparent)}
+
+/* ---------- destinations ---------- */
+h2.pt{margin:0 0 clamp(22px,4vh,44px);font-size:clamp(20px,3.4vw,44px);font-weight:800;
+  letter-spacing:-.045em;line-height:1.06;max-width:19ch;text-wrap:balance;color:var(--fg)}
+h2.pt em{font-style:normal;font-weight:200;color:var(--muted)}
+.cols{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(16px,2.6vw,40px)}
+@media (max-width:1020px){.cols{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.cols{grid-template-columns:1fr}}
+.col{--gc:var(--fg)}
+.col .top{display:flex;align-items:baseline;gap:.6em;padding-bottom:.5em;margin-bottom:.65em;
+  border-bottom:2px solid var(--gc)}
+.col .top .n{font-size:clamp(24px,3vw,38px);font-weight:800;line-height:1;letter-spacing:-.05em;color:var(--gc)}
+.col .top h3{margin:0;font-size:11px;letter-spacing:.26em;text-transform:uppercase;font-weight:800;color:var(--gc)}
+.col .note{margin:0 0 1rem;font-size:11.5px;line-height:1.6;color:var(--muted)}
+.dest{display:block;text-decoration:none;padding:.5em 0;
+  border-bottom:1px solid color-mix(in oklab,var(--fg) 15%,transparent);transition:padding-left .2s ease}
+.dest:hover{padding-left:8px}
+.dest .r{display:flex;align-items:baseline;justify-content:space-between;gap:.7em}
+.dest .nm{font-size:clamp(15px,1.5vw,19px);font-weight:800;letter-spacing:-.02em;color:var(--fg);transition:color .16s ease}
+.dest:hover .nm{color:var(--gc)}
+.dest .mt{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+.dest .ds{display:block;font-size:11.5px;color:var(--muted);margin-top:.05em;line-height:1.5}
+
+/* ---------- signal ---------- */
+.sigs{display:grid;border-top:1px solid color-mix(in oklab,var(--fg) 22%,transparent)}
+.sig{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:clamp(12px,2.2vw,30px);align-items:center;
+  padding:clamp(12px,1.9vh,22px) 0;border-bottom:1px solid color-mix(in oklab,var(--fg) 15%,transparent);
+  text-decoration:none;transition:padding-left .22s ease}
+.sig:hover{padding-left:10px}
+.sig .n{font-size:11px;letter-spacing:.16em;color:var(--faint);font-weight:700}
+.sig .tt{font-size:clamp(14.5px,2vw,25px);font-weight:800;letter-spacing:-.035em;line-height:1.2;
+  color:var(--fg);text-wrap:balance;transition:color .18s ease}
+.sig:hover .tt{color:var(--vc)}
+.sig .au{font-size:11px;color:var(--muted);white-space:nowrap;text-align:right}
+@media (max-width:640px){.sig{grid-template-columns:auto minmax(0,1fr)}.sig .au{grid-column:2;text-align:left;padding-top:.2em}}
+
+/* ---------- colophon ---------- */
+.colo{display:grid;gap:1.4rem;max-width:62ch;padding-bottom:clamp(40px,8vh,90px)}
+.colo p{margin:0;font-size:13.5px;line-height:1.9;color:var(--muted)}
+.colo a{color:color-mix(in oklab,var(--fg) 94%,var(--bg));text-underline-offset:3px}
+.colo a:hover{color:var(--accent)}
+
+/* ---------- theme rail (fixed chrome) ---------- */
+#rail{position:fixed;left:0;right:0;bottom:0;z-index:30;height:var(--rail);
+  display:flex;align-items:center;gap:10px;padding:0 12px;
+  background:color-mix(in oklab,var(--bg) 86%,transparent);backdrop-filter:blur(18px) saturate(1.3);
+  border-top:1px solid color-mix(in oklab,var(--fg) 16%,transparent)}
+#now{flex:0 0 auto;display:flex;align-items:center;gap:.6em;min-width:0;
+  font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);
+  padding-right:12px;border-right:1px solid color-mix(in oklab,var(--fg) 16%,transparent)}
+#now b{color:var(--fg);font-weight:800;letter-spacing:.06em;font-size:11.5px;white-space:nowrap}
+.sw{display:inline-flex;width:max-content;border-radius:2px;overflow:hidden;
+  box-shadow:0 0 0 1px color-mix(in oklab,var(--fg) 28%,transparent)}
+.sw i{display:block;width:8px;height:13px}
+#railstrip{flex:1;min-width:0;display:flex;gap:6px;overflow-x:auto;padding:6px 2px;scrollbar-width:none}
+#railstrip::-webkit-scrollbar{display:none}
+.rt{flex:0 0 auto;width:72px;cursor:pointer;border:0;padding:0;background:transparent;border-radius:2px;
+  transition:transform .16s ease}
+.rt:hover{transform:translateY(-2px)}
+.rt .im{display:block;width:100%;aspect-ratio:16/10;border-radius:2px;background-size:cover;background-position:center;
+  filter:saturate(.6) brightness(.68);box-shadow:0 0 0 1px color-mix(in oklab,var(--fg) 18%,transparent);
+  transition:filter .2s ease,box-shadow .2s ease}
+.rt:hover .im,.rt[aria-current="true"] .im{filter:none}
+.rt[aria-current="true"] .im{box-shadow:0 0 0 2px var(--accent)}
+.rt .cn{display:block;font:inherit;font-size:8.5px;letter-spacing:.05em;color:var(--faint);margin-top:2px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rt[aria-current="true"] .cn{color:var(--fg);font-weight:700}
+.nav{flex:0 0 auto;display:flex;gap:4px}
+.nav button{width:28px;height:28px;border-radius:3px;cursor:pointer;font:inherit;font-size:12px;
+  display:grid;place-items:center;color:var(--muted);background:color-mix(in oklab,var(--fg) 9%,transparent);
+  border:1px solid color-mix(in oklab,var(--fg) 20%,transparent);transition:color .16s ease,background .16s ease}
+.nav button:hover{color:var(--fg);background:color-mix(in oklab,var(--fg) 20%,transparent)}
+@media (max-width:680px){:root{--rail:68px}#now .lbl{display:none}.rt{width:56px}}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+  .rv{opacity:1;transform:none}.rule{transform:none}
+}
+</style>
+
+<div class="bg" id="bgA"></div><div class="bg" id="bgB"></div>
+<div id="tint"></div><div id="dither"></div>
+
+<main>
+  <section id="top">
+    <div class="rv">
+      <a class="flash" id="news" href="#"><b>New</b><span class="t"></span><span>→</span></a>
+      <pre id="logo" aria-label="Omarchy"></pre>
+      <h1 class="tag"></h1>
+      <p class="lead"></p>
+      <div class="go">
+        <a class="btn" id="cta-iso" href="#"><span>Download ISO</span><span class="sz">4.0.1 · ≈3 GB</span></a>
+        <a class="btn o" href="https://omarchy.org/manual/">Read the manual</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="rule"></div>
+
+  <section style="--pc:var(--green)">
+    <div class="rv">
+      <div class="kicker"><span class="ln"></span><span class="no">01</span><span>Where to go</span></div>
+      <h2 class="pt">Fourteen doors. <em>Four reasons.</em></h2>
+      <div class="cols" id="cols"></div>
+    </div>
+  </section>
+
+  <div class="rule"></div>
+
+  <section style="--pc:var(--yellow)">
+    <div class="rv">
+      <div class="kicker"><span class="ln"></span><span class="no">02</span><span>Signal</span></div>
+      <h2 class="pt">What people <em>made of it.</em></h2>
+      <div class="sigs" id="sigs"></div>
+    </div>
+  </section>
+
+  <div class="rule"></div>
+
+  <section style="--pc:var(--cyan)">
+    <div class="rv">
+      <div class="kicker"><span class="ln"></span><span class="no">03</span><span>Colophon</span></div>
+      <div class="colo">
+        <p>Looking to become a partner or patron of Omarchy? Write <a href="mailto:david@omarchy.org">david@omarchy.org</a></p>
+        <p>Incubated at <a href="https://37signals.com">37signals</a>, makers of <a href="https://basecamp.com">Basecamp</a> and <a href="https://hey.com">HEY</a>. Sponsored hosting by <a href="https://cloudflare.com">Cloudflare</a>.</p>
+        <p><a href="https://omarchy.org/brand/">Omarchy is a pending trademark.</a></p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="rail">
+  <span id="now"><span class="sw" id="nowsw"></span><b id="nowname"></b><span class="lbl" id="nowwp"></span></span>
+  <div class="nav">
+    <button id="prev" aria-label="Previous theme">◀</button>
+    <button id="next" aria-label="Next theme">▶</button>
+  </div>
+  <div id="railstrip" role="listbox" aria-label="Theme"></div>
+</div>
+
+<!--CORE-->
+<script>
+(function(){
+  var C = OM.COPY;
+  document.getElementById("logo").textContent = OM.LOGO;
+  document.querySelector("#news .t").textContent = OM.NEWS.label;
+  document.getElementById("news").href = OM.NEWS.href;
+  document.querySelector("h1.tag").innerHTML = C.tagline + ' <a href="'+C.taglineHref+'">'+C.taglineName+'</a>';
+  document.querySelector(".lead").innerHTML = C.lead + ' <a href="'+C.leadCtaHref+'">'+C.leadCta+'</a>' + C.leadTail;
+  document.getElementById("cta-iso").href = OM.ISO;
+
+  document.getElementById("cols").innerHTML = OM.GROUPS.map(function(g,i){
+    return '<div class="col" style="--gc:var(--'+g.hue+'-lit)">'+
+      '<div class="top"><span class="n">'+(i+1)+'</span><h3>'+g.title+'</h3></div>'+
+      '<p class="note">'+g.note+'</p>'+
+      g.links.map(function(l){
+        return '<a class="dest" href="'+l.href+'"><span class="r"><span class="nm">'+l.label+
+          '</span><span class="mt">'+l.meta+'</span></span><span class="ds">'+l.desc+'</span></a>';
+      }).join("")+'</div>';
+  }).join("");
+
+  var hues = ["red","magenta","cyan","green","yellow"];
+  document.getElementById("sigs").innerHTML = OM.VIDEOS.map(function(v,i){
+    return '<a class="sig" style="--vc:var(--'+hues[i%hues.length]+'-lit)" href="https://www.youtube.com/watch?v='+v.id+'">'+
+      '<span class="n">'+String(i+1).padStart(2,"0")+'</span><span class="tt">'+v.title+
+      '</span><span class="au">'+v.by+'</span></a>';
+  }).join("");
+
+  /* ---- theme rail: fixed chrome, the only place themes appear ---- */
+  var strip = document.getElementById("railstrip");
+  OM.themes.forEach(function(t){
+    var r = document.createElement("button");
+    r.className = "rt"; r.type = "button"; r.dataset.id = t.id; r.title = t.label + " — " + t.wp;
+    r.setAttribute("role","option");
+    r.innerHTML = '<span class="im" style="background-image:url('+t.img+')"></span>'+
+      '<span class="cn">'+t.label+'</span>';
+    r.onclick = function(){ OM.apply(t.id); };
+    strip.appendChild(r);
+  });
+  function step(d){
+    var i = OM.themes.findIndex(function(t){ return t.id === OM.current.id; });
+    OM.apply(OM.themes[(i + d + OM.themes.length) % OM.themes.length].id);
+  }
+  document.getElementById("prev").onclick = function(){ step(-1); };
+  document.getElementById("next").onclick = function(){ step(1); };
+  addEventListener("keydown", function(e){
+    if (e.target.tagName === "INPUT") return;
+    if (e.key === "[") step(-1);
+    if (e.key === "]") step(1);
+  });
+
+  /* ---- crossfading wallpaper + halftone wipe on every change ---- */
+  var A = document.getElementById("bgA"), B = document.getElementById("bgB"), front = null;
+  var dither = document.getElementById("dither"), first = true;
+  OM.onChange(function(t){
+    var next = front === A ? B : A;
+    next.style.backgroundImage = "url('" + t.img + "')";
+    next.classList.add("on");
+    if (front) front.classList.remove("on");
+    front = next;
+    if (!first && !OM.reduced) { dither.classList.remove("go"); void dither.offsetWidth; dither.classList.add("go"); }
+
+    document.getElementById("nowname").textContent = t.label;
+    document.getElementById("nowwp").textContent = t.wp;
+    document.getElementById("nowsw").innerHTML = t.swatch.map(function(c){
+      return '<i style="background:'+c+'"></i>'; }).join("");
+    Array.prototype.forEach.call(strip.children, function(b){
+      var on = b.dataset.id === t.id;
+      b.setAttribute("aria-current", on ? "true" : "false");
+      if (on && !first) b.scrollIntoView({behavior: OM.reduced ? "auto" : "smooth", block:"nearest", inline:"center"});
+    });
+    first = false;
+  });
+  OM.boot("tokyo-night","rose-pine");
+  var cur = strip.querySelector('[aria-current="true"]');
+  if (cur) cur.scrollIntoView({block:"nearest", inline:"center"});
+
+  OM.reveal(document.querySelectorAll(".rv, .rule"), { threshold:.1, rootMargin:"0px 0px -8% 0px" });
+})();
+</script>

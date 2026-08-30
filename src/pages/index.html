@@ -1,0 +1,225 @@
+<title>Omarchy Landing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap">
+<style>
+/* light is the base; dark is redefined token-for-token below */
+:root{
+  --ink:#14161f;
+  --ink-2:#4a4f63;
+  --ink-3:#7b8195;
+  --paper:#f3f3f6;
+  --card:#ffffff;
+  --line:#d9dae2;
+  --line-2:#e9eaef;
+  --c1:#4763c9;   /* blue   */
+  --c2:#8455c4;   /* violet */
+  --c3:#1e8a92;   /* teal   */
+  --c4:#4e8a2f;   /* green  */
+  --c5:#b8492f;   /* rust   */
+  --shadow:0 1px 2px rgba(20,22,31,.05),0 10px 26px rgba(20,22,31,.07);
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ink:#e7e9f2; --ink-2:#a3a8bd; --ink-3:#71768d;
+    --paper:#101219; --card:#181b25; --line:#2b2f3d; --line-2:#22252f;
+    --c1:#7aa2f7; --c2:#bb9af7; --c3:#5cc7c2; --c4:#9ece6a; --c5:#f7768e;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 32px rgba(0,0,0,.36);
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#e7e9f2; --ink-2:#a3a8bd; --ink-3:#71768d;
+  --paper:#101219; --card:#181b25; --line:#2b2f3d; --line-2:#22252f;
+  --c1:#7aa2f7; --c2:#bb9af7; --c3:#5cc7c2; --c4:#9ece6a; --c5:#f7768e;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 32px rgba(0,0,0,.36);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--mono);
+  font-size:14px;line-height:1.65;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+::selection{background:var(--c1);color:var(--paper)}
+:focus-visible{outline:2px solid var(--c1);outline-offset:3px}
+
+.wrap{max-width:1160px;margin:0 auto;padding:clamp(26px,6vw,72px) clamp(18px,4.5vw,52px) clamp(50px,9vh,110px)}
+
+/* ---------- masthead ---------- */
+header{border-bottom:1px solid var(--line);padding-bottom:clamp(22px,4vh,40px);margin-bottom:clamp(26px,5vh,52px)}
+.eyebrow{display:flex;align-items:center;gap:.8em;margin:0 0 1.1rem;
+  font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--ink-3)}
+.eyebrow .dots{display:flex;gap:3px}
+.eyebrow .dots i{width:7px;height:7px;border-radius:50%;display:block}
+h1{margin:0;font-size:clamp(23px,3.7vw,44px);font-weight:800;letter-spacing:-.045em;
+  line-height:1.08;max-width:20ch;text-wrap:balance}
+h1 em{font-style:normal;font-weight:200;color:var(--ink-2)}
+.sub{margin:1rem 0 0;max-width:70ch;font-size:14px;line-height:1.8;color:var(--ink-2)}
+.sub a{color:var(--c1);text-underline-offset:3px}
+
+/* ---------- the shared brief ---------- */
+.brief{display:grid;grid-template-columns:repeat(auto-fit,minmax(196px,1fr));gap:0;
+  margin-top:clamp(22px,4vh,38px);border:1px solid var(--line);border-radius:8px;overflow:hidden;
+  background:var(--card)}
+.brief div{padding:.95em 1.05em;border-right:1px solid var(--line-2)}
+.brief div:last-child{border-right:0}
+.brief h3{margin:0 0 .35rem;font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3)}
+.brief p{margin:0;font-size:12px;line-height:1.6;color:var(--ink-2)}
+.brief b{color:var(--ink);font-weight:700}
+
+/* ---------- cards ---------- */
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(16px,2.4vw,30px)}
+@media (max-width:820px){.grid{grid-template-columns:1fr}}
+.card{display:flex;flex-direction:column;text-decoration:none;border-radius:10px;overflow:hidden;
+  background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);
+  opacity:0;transform:translateY(16px);
+  transition:opacity .55s cubic-bezier(.2,.85,.3,1),transform .55s cubic-bezier(.2,.85,.3,1),
+             border-color .2s ease,box-shadow .2s ease}
+.card.in{opacity:1;transform:none}
+.card:hover{border-color:var(--ac);
+  box-shadow:0 1px 2px rgba(20,22,31,.05),0 16px 40px color-mix(in oklab,var(--ac) 26%,transparent)}
+.thumb{position:relative;aspect-ratio:16/9;border-bottom:1px solid var(--line);
+  background:color-mix(in oklab,var(--ac) 8%,var(--card));overflow:hidden}
+.thumb svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.card:hover .thumb svg .lift{transform:translateY(-2px)}
+.thumb svg .lift{transition:transform .3s cubic-bezier(.2,.85,.3,1)}
+.meta{padding:clamp(14px,1.8vw,20px);display:flex;flex-direction:column;gap:.55rem;flex:1}
+.mrow{display:flex;align-items:baseline;gap:.75em}
+.num{font-size:10.5px;font-weight:800;letter-spacing:.14em;color:var(--ac)}
+.card h2{margin:0;font-size:clamp(16px,1.85vw,21px);font-weight:800;letter-spacing:-.028em;color:var(--ink)}
+.thesis{margin:0;font-size:12.5px;line-height:1.7;color:var(--ink-2)}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:auto;padding-top:.35rem}
+.tag{font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;padding:.28em .55em;border-radius:4px;
+  color:var(--ink-2);background:color-mix(in oklab,var(--ac) 11%,transparent);
+  border:1px solid color-mix(in oklab,var(--ac) 26%,transparent)}
+.open{display:flex;align-items:center;gap:.5em;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ac);font-weight:700;padding-top:.25rem}
+.open .arw{transition:transform .22s ease}
+.card:hover .open .arw{transform:translateX(4px)}
+
+/* ---------- footnote ---------- */
+.note{margin-top:clamp(30px,5vh,56px);padding-top:clamp(20px,3.4vh,34px);border-top:1px solid var(--line);
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.6rem}
+.note h3{margin:0 0 .45rem;font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3)}
+.note p{margin:0;font-size:12px;line-height:1.75;color:var(--ink-2)}
+.note kbd{font:inherit;font-size:10px;border:1px solid var(--line);border-radius:3px;padding:.08em .38em;
+  background:color-mix(in oklab,var(--ink) 6%,transparent);color:var(--ink)}
+
+@media (prefers-reduced-motion:reduce){
+  *{transition-duration:.001ms!important;animation-duration:.001ms!important}
+  .card{opacity:1;transform:none}
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">
+      <span class="dots"><i style="background:var(--c1)"></i><i style="background:var(--c2)"></i><i style="background:var(--c3)"></i></span>
+      omarchy.org · landing page · two directions
+    </p>
+    <h1>Two ways to rebuild <em>the Omarchy landing page.</em></h1>
+    <p class="sub">Same content, same order, same logo and tagline as <a href="https://omarchy.org">omarchy.org</a> today — two different visual arguments for what that page should feel like. Every one is live and fully interactive: pick a theme and the entire page repaints, wallpaper included.</p>
+
+    <div class="brief">
+      <div><h3>Themes</h3><p>All <b>22</b> real Omarchy themes, palettes and wallpapers pulled straight from the repo. The picker previews each as <b>three colours</b>.</p></div>
+      <div><h3>Structure</h3><p>News → logo → tagline → lead → link grid → videos → footer. Unchanged from the live site.</p></div>
+      <div><h3>Buttons</h3><p>The flat row of 14 links becomes <b>four groups</b> — Install, Build, Gather, Back it — each owning a different theme colour.</p></div>
+      <div><h3>Type</h3><p><b>JetBrains Mono</b> throughout, from hairline 100 to 800, doing the work a display face usually would.</p></div>
+    </div>
+  </header>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="note">
+    <div><h3>Try this in each</h3><p>Press <kbd>T</kbd> in the TTY for an fzf theme overlay, or use the filmstrip along the bottom of the Broadside. <kbd>[</kbd> and <kbd>]</kbd> step through themes in both.</p></div>
+    <div><h3>Where the pixels come from</h3><p>Palettes are parsed from each theme's <b>colors.toml</b>; wallpapers are the real backgrounds, re-encoded and embedded so the pages work with no network.</p></div>
+    <div><h3>Still to decide</h3><p>Which of the two carries the brand — and whether the theme picker belongs in a status bar or a persistent rail.</p></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var C = [
+{ n:"01", t:"Omarchy TTY", ac:"var(--c4)",
+      url:"tty/",
+      thesis:"The page is a terminal session. Each block types its own command, then the output decodes out of ASCII noise. Links are a coloured tree; the theme picker is an fzf overlay off a tmux status bar.",
+      tags:["Terminal","fzf picker","ASCII decode"],
+      art:'<rect class="bg"/><g class="lift">'+
+          '<rect x="18" y="16" width="52" height="5" rx="1.5" fill="var(--ac)" opacity=".8"/>'+
+          '<rect x="18" y="28" width="130" height="14" rx="2" fill="currentColor" opacity=".2"/>'+
+          '<rect x="18" y="50" width="86" height="4" rx="1.5" fill="currentColor" opacity=".3"/>'+
+          '<rect x="18" y="60" width="60" height="4" rx="1.5" fill="currentColor" opacity=".18"/>'+
+          '<rect x="18" y="76" width="30" height="9" rx="2" fill="var(--ac)"/>'+
+          '<rect x="53" y="76" width="34" height="9" rx="2" fill="none" stroke="currentColor" stroke-opacity=".3"/>'+
+          '<path d="M22 98v24M22 104h8M22 112h8M22 120h8" stroke="var(--c1)" stroke-width="1.2" fill="none" opacity=".85"/>'+
+          '<path d="M96 98v24M96 104h8M96 112h8M96 120h8" stroke="var(--c2)" stroke-width="1.2" fill="none" opacity=".85"/>'+
+          '<rect x="34" y="102" width="40" height="3" rx="1.5" fill="currentColor" opacity=".28"/>'+
+          '<rect x="34" y="110" width="46" height="3" rx="1.5" fill="currentColor" opacity=".28"/>'+
+          '<rect x="34" y="118" width="34" height="3" rx="1.5" fill="currentColor" opacity=".28"/>'+
+          '<rect x="108" y="102" width="42" height="3" rx="1.5" fill="currentColor" opacity=".28"/>'+
+          '<rect x="108" y="110" width="36" height="3" rx="1.5" fill="currentColor" opacity=".28"/>'+
+          '<rect x="108" y="118" width="44" height="3" rx="1.5" fill="currentColor" opacity=".28"/>'+
+          '</g><rect x="0" y="132" width="240" height="12" fill="var(--ac)" opacity=".22"/>'+
+          '<rect x="6" y="135" width="26" height="6" rx="1" fill="var(--ac)"/>' },
+
+{ n:"02", t:"Omarchy Broadside", ac:"var(--c2)",
+      url:"broadside/",
+      thesis:"An editorial poster. The wallpaper runs full bleed at full strength, the type goes very large and very light, and a filmstrip of all 22 wallpapers sits permanently along the bottom edge.",
+      tags:["Full bleed","Filmstrip rail","Halftone wipe"],
+      art:'<defs><linearGradient id="g6" x1="0" y1="0" x2="1" y2="1">'+
+          '<stop offset="0" stop-color="var(--c1)" stop-opacity=".5"/>'+
+          '<stop offset=".55" stop-color="var(--c2)" stop-opacity=".42"/>'+
+          '<stop offset="1" stop-color="var(--c4)" stop-opacity=".38"/></linearGradient></defs>'+
+          '<rect x="0" y="0" width="240" height="144" fill="url(#g6)"/>'+
+          '<rect x="0" y="0" width="150" height="144" fill="var(--card)" opacity=".72"/>'+
+          '<g class="lift">'+
+          '<rect x="16" y="16" width="70" height="6" rx="3" fill="var(--ac)" opacity=".55"/>'+
+          '<rect x="16" y="30" width="112" height="16" rx="2" fill="currentColor" opacity=".26"/>'+
+          '<rect x="16" y="54" width="120" height="10" rx="2" fill="currentColor" opacity=".42"/>'+
+          '<rect x="16" y="68" width="92" height="10" rx="2" fill="currentColor" opacity=".42"/>'+
+          '<rect x="16" y="86" width="66" height="4" rx="2" fill="currentColor" opacity=".2"/>'+
+          '<rect x="16" y="96" width="52" height="4" rx="2" fill="currentColor" opacity=".2"/>'+
+          '<rect x="16" y="108" width="44" height="11" rx="2" fill="var(--ac)"/>'+
+          '<rect x="66" y="108" width="40" height="11" rx="2" fill="none" stroke="currentColor" stroke-opacity=".35"/>'+
+          '</g>'+
+          '<rect x="0" y="128" width="240" height="16" fill="var(--card)" opacity=".9"/>'+
+          '<rect x="6" y="131" width="16" height="10" rx="1.5" fill="var(--ac)"/>'+
+          '<rect x="26" y="131" width="16" height="10" rx="1.5" fill="var(--c1)" opacity=".45"/>'+
+          '<rect x="46" y="131" width="16" height="10" rx="1.5" fill="var(--c2)" opacity=".45"/>'+
+          '<rect x="66" y="131" width="16" height="10" rx="1.5" fill="var(--c3)" opacity=".45"/>'+
+          '<rect x="86" y="131" width="16" height="10" rx="1.5" fill="var(--c5)" opacity=".45"/>'+
+          '<rect x="106" y="131" width="16" height="10" rx="1.5" fill="var(--c4)" opacity=".45"/>'+
+          '<rect x="126" y="131" width="16" height="10" rx="1.5" fill="var(--c1)" opacity=".28"/>'+
+          '<rect x="146" y="131" width="16" height="10" rx="1.5" fill="var(--c2)" opacity=".28"/>'+
+          '<rect x="166" y="131" width="16" height="10" rx="1.5" fill="var(--c3)" opacity=".28"/>'+
+          '<rect x="186" y="131" width="16" height="10" rx="1.5" fill="var(--c5)" opacity=".28"/>'+
+          '<rect x="206" y="131" width="16" height="10" rx="1.5" fill="var(--c4)" opacity=".28"/>' }
+  ];
+
+  document.getElementById("grid").innerHTML = C.map(function(c){
+    return '<a class="card" href="'+c.url+'" style="--ac:'+c.ac+'">'+
+      '<div class="thumb"><svg viewBox="0 0 240 144" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Layout sketch">'+
+        c.art.replace('<rect class="bg"/>','') +
+      '</svg></div>'+
+      '<div class="meta">'+
+        '<div class="mrow"><span class="num">'+c.n+'</span><h2>'+c.t+'</h2></div>'+
+        '<p class="thesis">'+c.thesis+'</p>'+
+        '<div class="tags">'+c.tags.map(function(t){ return '<span class="tag">'+t+'</span>'; }).join("")+'</div>'+
+        '<span class="open">Open <span class="arw">→</span></span>'+
+      '</div></a>';
+  }).join("");
+
+  var reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var cards = document.querySelectorAll(".card");
+  if (reduced) { Array.prototype.forEach.call(cards, function(c){ c.classList.add("in"); }); }
+  else {
+    var io = new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if (!e.isIntersecting) return;
+        var i = Array.prototype.indexOf.call(cards, e.target);
+        setTimeout(function(){ e.target.classList.add("in"); }, (i % 2) * 90);
+        io.unobserve(e.target);
+      });
+    }, { threshold:.12, rootMargin:"0px 0px -8% 0px" });
+    Array.prototype.forEach.call(cards, function(c){ io.observe(c); });
+  }
+})();
+</script>
