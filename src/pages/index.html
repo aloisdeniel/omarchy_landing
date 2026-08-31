@@ -184,11 +184,39 @@ footer .sig{color:var(--muted)}
 .fzi[data-sel]{background:var(--accent);color:var(--accent-ink)}
 .fzi[data-sel] .md,.fzi[data-sel] .wpn{color:inherit;opacity:.72}
 .fzi .sw i{width:8px;height:12px}
+/* the random row reads as a control, not another theme in the list */
+.fzi.rnd{display:flex;align-items:center;gap:.7em;cursor:default;
+  border-bottom:1px solid color-mix(in oklab,var(--fg) 14%,transparent);
+  padding-top:.5em;padding-bottom:.5em;margin-bottom:2px}
+.fzi.rnd .rgo{flex:1;min-width:0;display:flex;align-items:center;gap:.8em;
+  font:inherit;font-size:inherit;color:inherit;background:transparent;border:0;
+  padding:0;cursor:pointer;text-align:left}
+.fzi.rnd .rgo .wpn{margin-left:auto}
+.fzi.rnd .dice{width:15px;height:15px;display:block;flex:0 0 auto;color:var(--accent)}
+.fzi.rnd[data-sel] .dice{color:inherit}
+/* scope segments: which pool a random draw comes from */
+.scope{display:flex;flex:0 0 auto;border-radius:4px;overflow:hidden;
+  box-shadow:inset 0 0 0 1px color-mix(in oklab,var(--fg) 26%,transparent)}
+.scope button{font:inherit;font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;
+  background:transparent;border:0;padding:.34em .55em;color:var(--muted);cursor:pointer;
+  transition:background .15s ease,color .15s ease}
+.scope button+button{box-shadow:inset 1px 0 0 color-mix(in oklab,var(--fg) 22%,transparent)}
+.scope button:hover{background:color-mix(in oklab,var(--fg) 14%,transparent);color:var(--fg)}
+.scope button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:700}
+/* keep the segments legible once the row itself takes the accent highlight */
+.fzi.rnd[data-sel] .scope{box-shadow:inset 0 0 0 1px color-mix(in oklab,var(--accent-ink) 38%,transparent)}
+.fzi.rnd[data-sel] .scope button{color:color-mix(in oklab,var(--accent-ink) 70%,transparent)}
+.fzi.rnd[data-sel] .scope button+button{box-shadow:inset 1px 0 0 color-mix(in oklab,var(--accent-ink) 32%,transparent)}
+.fzi.rnd[data-sel] .scope button:hover{background:color-mix(in oklab,var(--accent-ink) 16%,transparent);color:var(--accent-ink)}
+.fzi.rnd[data-sel] .scope button[aria-pressed="true"]{background:var(--accent-ink);color:var(--accent)}
 .fzi .md{color:var(--faint);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase}
 .fzi .wpn{color:var(--muted);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;justify-self:end}
 .fz .ft{padding:.45em .8em;border-top:1px solid color-mix(in oklab,var(--fg) 16%,transparent);
   color:var(--muted);font-size:11px;display:flex;gap:1.2em;flex-wrap:wrap}
-@media (max-width:520px){.fzi .wpn{display:none}}
+@media (max-width:520px){
+  .fzi .wpn{display:none}
+  .scope button{padding:.34em .45em;letter-spacing:.06em}
+}
 
 /* ---------- small screens ----------
    Desktop layout above is untouched; everything here is an override. */
@@ -346,25 +374,72 @@ footer .sig{color:var(--muted)}
       return '<i style="background:' + c + '"></i>'; }).join("") + "</span>";
   }
   var ov = document.getElementById("ov"), fzq = document.getElementById("fzq"),
-      fzbody = document.getElementById("fzbody"), sel = 0, shown = OM.themes.slice();
+      fzbody = document.getElementById("fzbody"), sel = 0;
+
+  /* the first row is not a theme: it clears a pinned choice, turns random back
+     on, and draws a new one straight away so the click visibly does something */
+  var RANDOM = { random: true, label: "Random", keywords: "random shuffle auto surprise reset" };
+  var shown = [RANDOM].concat(OM.themes);
+
+  var DICE = '<svg class="dice" viewBox="0 0 16 16" aria-hidden="true">' +
+    '<rect x="1.2" y="1.2" width="13.6" height="13.6" rx="3" fill="none" stroke="currentColor" stroke-width="1.3"/>' +
+    '<circle cx="5.3" cy="5.3" r="1.35" fill="currentColor"/>' +
+    '<circle cx="10.7" cy="10.7" r="1.35" fill="currentColor"/>' +
+    '<circle cx="8" cy="8" r="1.35" fill="currentColor"/></svg>';
 
   function renderFz(){
     var q = fzq.value.trim().toLowerCase();
-    shown = OM.themes.filter(function(t){
-      return !q || (t.label + " " + t.id + " " + t.wp).toLowerCase().indexOf(q) > -1; });
+    shown = [RANDOM].concat(OM.themes).filter(function(t){
+      if (!q) return true;
+      /* mode is shown on every row, so it should be searchable too */
+      return (t.random ? t.keywords : t.label + " " + t.id + " " + t.wp + " " + t.mode)
+        .toLowerCase().indexOf(q) > -1;
+    });
     if (sel >= shown.length) sel = Math.max(0, shown.length - 1);
     fzbody.innerHTML = "";
     shown.forEach(function(t,i){
-      var b = document.createElement("button");
-      b.className = "fzi"; b.type = "button";
+      var b;
+      if (t.random) {
+        /* a container, not a button: the scope segments are buttons of their own
+           and nesting interactive elements is invalid */
+        b = document.createElement("div");
+        b.className = "fzi rnd";
+        var sc = OM.effectiveScope();
+        b.innerHTML =
+          '<button class="rgo" type="button">' + DICE +
+            '<span class="md">' + (OM.isPinned() ? "off" : "on") + '</span>' +
+            '<span>Random</span>' +
+            '<span class="wpn">a new theme every reload</span>' +
+          '</button>' +
+          '<span class="scope" role="group" aria-label="Pick random themes from">' +
+            ["dark","light","all"].map(function(v){
+              return '<button type="button" data-s="' + v + '" aria-pressed="' +
+                (v === sc) + '">' + v + "</button>";
+            }).join("") +
+          "</span>";
+        b.querySelector(".rgo").onclick = function(){ OM.randomize(); close(); };
+        Array.prototype.forEach.call(b.querySelectorAll(".scope button"), function(sb){
+          sb.onclick = function(){
+            /* set the pool, then draw from it so the change is immediately visible.
+               the overlay stays open so scopes can be compared. */
+            OM.setScope(sb.dataset.s);
+            OM.randomize();
+            renderFz(); paintSel();
+          };
+        });
+      } else {
+        b = document.createElement("button");
+        b.className = "fzi"; b.type = "button";
+        b.innerHTML = swatch(t) + '<span class="md">' + t.mode + '</span><span>' + t.label +
+          '</span><span class="wpn">' + t.wp + "</span>";
+        b.onclick = function(){ OM.choose(t.id); close(); };
+      }
       if (i === sel) b.setAttribute("data-sel","");
-      b.innerHTML = swatch(t) + '<span class="md">' + t.mode + '</span><span>' + t.label +
-        '</span><span class="wpn">' + t.wp + "</span>";
       b.onmouseenter = function(){ sel = i; paintSel(); };
-      b.onclick = function(){ OM.apply(t.id); close(); };
       fzbody.appendChild(b);
     });
-    document.getElementById("fzcount").textContent = shown.length + "/" + OM.themes.length;
+    document.getElementById("fzcount").textContent =
+      (shown.length - (shown[0] && shown[0].random ? 1 : 0)) + "/" + OM.themes.length;
   }
   function paintSel(){
     Array.prototype.forEach.call(fzbody.children, function(c,i){
@@ -373,7 +448,9 @@ footer .sig{color:var(--muted)}
   }
   function open(){
     ov.setAttribute("data-open",""); fzq.value = ""; 
-    sel = Math.max(0, OM.themes.findIndex(function(t){ return t.id === OM.current.id; }));
+    sel = OM.isPinned()
+      ? Math.max(1, OM.themes.findIndex(function(t){ return t.id === OM.current.id; }) + 1)
+      : 0;
     renderFz(); paintSel(); fzq.focus();
   }
   function close(){ ov.removeAttribute("data-open"); }
@@ -383,12 +460,17 @@ footer .sig{color:var(--muted)}
   fzq.onkeydown = function(e){
     if (e.key === "ArrowDown"){ e.preventDefault(); sel = Math.min(shown.length-1, sel+1); paintSel(); }
     else if (e.key === "ArrowUp"){ e.preventDefault(); sel = Math.max(0, sel-1); paintSel(); }
-    else if (e.key === "Enter"){ e.preventDefault(); if (shown[sel]){ OM.apply(shown[sel].id); close(); } }
+    else if (e.key === "Enter"){
+      e.preventDefault();
+      var t = shown[sel];
+      if (t && t.random){ OM.randomize(); close(); }
+      else if (t){ OM.choose(t.id); close(); }
+    }
     else if (e.key === "Escape"){ close(); }
   };
   function step(d){
     var i = OM.themes.findIndex(function(t){ return t.id === OM.current.id; });
-    OM.apply(OM.themes[(i + d + OM.themes.length) % OM.themes.length].id);
+    OM.choose(OM.themes[(i + d + OM.themes.length) % OM.themes.length].id);
   }
   document.getElementById("prev").onclick = function(){ step(-1); };
   document.getElementById("next").onclick = function(){ step(1); };
@@ -403,7 +485,8 @@ footer .sig{color:var(--muted)}
   /* ---- react to theme changes ---- */
   OM.onChange(function(t){
     document.getElementById("barname").textContent = t.label;
-    document.getElementById("barwp").textContent = "wallpaper: " + t.wp + "  ·  mode: " + t.mode + "  ·  press T to change";
+    document.getElementById("barwp").textContent = "wallpaper: " + t.wp + "  ·  mode: " + t.mode +
+      "  ·  " + (OM.isPinned() ? "pinned" : "random each reload") + "  ·  press T to change";
     var w = document.getElementById("wp");
     w.style.opacity = t.mode === "light" ? ".55" : ".42";
   });

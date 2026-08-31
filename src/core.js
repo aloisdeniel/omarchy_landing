@@ -1,7 +1,16 @@
 /* ---- Omarchy shared core: theme engine + content model ---- */
 window.OM = (function () {
   var THEMES = __THEMES__;
-  var KEY = "omarchy.theme.last";  /* last theme shown, only so a reload does not repeat it */
+  /* Two separate keys. PIN is a deliberate choice and is what survives a reload;
+     LAST is only a record of what was on screen, so a random draw can avoid
+     repeating it. Clearing PIN is what puts the page back into random mode. */
+  var PIN = "omarchy.theme.pinned";
+  var LAST = "omarchy.theme.last";
+  var SCOPE = "omarchy.random.scope";   /* dark | light | all; absent = follow the system */
+
+  function read(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function write(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function drop(k) { try { localStorage.removeItem(k); } catch (e) {} }
 
   function lum(h) {
     var r = parseInt(h.slice(1, 3), 16) / 255,
@@ -55,7 +64,7 @@ window.OM = (function () {
     t.swatch.forEach(function (c, i) { s.setProperty("--sw" + (i + 1), c); });
     document.documentElement.setAttribute("data-mode", t.mode);
     document.documentElement.setAttribute("data-omtheme", t.id);
-    try { localStorage.setItem(KEY, t.id); } catch (e) {}  /* may throw in private windows */
+    write(LAST, t.id);
     listeners.forEach(function (fn) { fn(t); });
     return t;
   }
@@ -69,21 +78,55 @@ window.OM = (function () {
     return !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches);
   }
 
-  /* Every load lands on a different theme, so the collection is the first thing
-     you see — but only ever from the half that matches the system appearance,
-     so a dark desktop never gets flashed a white page. The previous theme is
-     excluded too: within a pool this small a plain random pick repeats often
-     enough that a reload changing nothing reads as broken. A theme chosen by
-     hand ignores all of this. */
+  /* A random load lands somewhere new every time, so the collection is the first
+     thing you see — but only ever within the half matching the system appearance,
+     so a dark desktop is never flashed a white page. The theme last on screen is
+     excluded: within a pool this small a plain random pick repeats often enough
+     that a reload changing nothing reads as broken. */
+  function scope() {
+    var v = read(SCOPE);
+    return (v === "dark" || v === "light" || v === "all") ? v : null;   /* null = follow system */
+  }
+
+  /* what the next draw will actually use: the reader's choice, or the system */
+  function effectiveScope() {
+    return scope() || (prefersLight() ? "light" : "dark");
+  }
+
+  function setScope(v) {
+    if (v === "dark" || v === "light" || v === "all") write(SCOPE, v); else drop(SCOPE);
+    return effectiveScope();
+  }
+
+  function randomId() {
+    var prev = read(LAST);
+    var sc = effectiveScope();
+    var pick = sc === "all" ? THEMES.slice()
+                            : THEMES.filter(function (t) { return t.mode === sc; });
+    if (!pick.length) pick = THEMES;                      /* should never happen */
+    var pool = pick.filter(function (t) { return t.id !== prev; });
+    if (!pool.length) pool = pick;                        /* only one in this scope */
+    return pool[Math.floor(Math.random() * pool.length)].id;
+  }
+
+  /* a deliberate pick: sticks until the reader asks for random again */
+  function choose(id) {
+    if (!byId[id]) return null;
+    write(PIN, id);
+    return apply(id);
+  }
+
+  /* back to random, and show a new one right away so the click has an effect */
+  function randomize() {
+    drop(PIN);
+    return apply(randomId());
+  }
+
+  function isPinned() { return !!(read(PIN) && byId[read(PIN)]); }
+
   function boot() {
-    var prev = null;
-    try { prev = localStorage.getItem(KEY); } catch (e) {}
-    var mode = prefersLight() ? "light" : "dark";
-    var inMode = THEMES.filter(function (t) { return t.mode === mode; });
-    if (!inMode.length) inMode = THEMES;                  /* should never happen */
-    var pool = inMode.filter(function (t) { return t.id !== prev; });
-    if (!pool.length) pool = inMode;                      /* only one in this mode */
-    return apply(pool[Math.floor(Math.random() * pool.length)].id);
+    var pinned = read(PIN);
+    return apply(pinned && byId[pinned] ? pinned : randomId());
   }
 
   var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -210,6 +253,8 @@ window.OM = (function () {
 
   return {
     themes: THEMES, byId: byId, apply: apply, boot: boot, onChange: onChange,
+    choose: choose, randomize: randomize, isPinned: isPinned, randomId: randomId,
+    scope: scope, setScope: setScope, effectiveScope: effectiveScope,
     get current() { return current; },
     reduced: reduced, reveal: reveal, scramble: scramble, type: type,
     lum: lum, ink: ink, readable: readable, contrast: contrast,

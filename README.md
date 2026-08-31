@@ -26,14 +26,28 @@ card, an arcade CRT, an engineering spec sheet, and an editorial broadside.
   gradient and the wallpaper. The picker previews each theme as three colours and
   lives in page *chrome*, never as a content section. Press <kbd>T</kbd> to open it,
   <kbd>[</kbd> and <kbd>]</kbd> to step through.
-- **A different theme every load.** The page picks one at random on each visit, so the
-  collection is the first thing you see — drawn only from the themes matching your
-  system appearance (17 dark, 5 light), so a dark desktop is never flashed a white
-  page. `localStorage` holds only the theme you were last shown, and that one is
-  excluded from the next draw; within a pool this small a plain random pick repeats
-  often enough that a reload changing nothing reads as a bug rather than as chance.
-  A theme you choose by hand ignores both rules, holds for that visit, and is not
-  restored afterwards.
+- **A different theme every load — until you pick one.** By default each visit draws a
+  theme at random, so the collection is the first thing you see. The draw is confined
+  to the themes matching your system appearance (17 dark, 5 light), so a dark desktop
+  is never flashed a white page, and it skips whatever was on screen last: within a
+  pool this small a plain random pick repeats often enough that a reload changing
+  nothing reads as a bug rather than as chance.
+
+  Choosing a theme — from the picker, the arrows, or <kbd>[</kbd> / <kbd>]</kbd> —
+  pins it. A pinned theme survives reloads and overrides the appearance filter, so you
+  can hold a light theme on a dark desktop. The first row of the picker, **Random**,
+  unpins and draws a fresh theme on the spot; the row reads `ON` or `OFF`, and the
+  status bar says `pinned` or `random each reload`.
+
+  That row also carries a `DARK / LIGHT / ALL` control for which pool the draw comes
+  from. It defaults to the system appearance and is only stored once you set it, so
+  the default keeps following the system. Picking a scope also unpins and redraws, and
+  leaves the picker open so pools can be compared.
+
+  Three keys carry this: `omarchy.theme.pinned` is the deliberate choice and is what
+  survives a reload; `omarchy.random.scope` is the pool override, absent while
+  following the system; `omarchy.theme.last` only records what was on screen so the
+  next draw can avoid repeating it.
 - **Wordmark.** The official SVG wordmark from [omarchy.org/brand](https://omarchy.org/brand/),
   refilled at build time with a gradient whose stops are the live theme's CSS variables.
   The gradient is `userSpaceOnUse`, so it sweeps once across the whole wordmark rather
