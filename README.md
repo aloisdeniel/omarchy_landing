@@ -53,7 +53,7 @@ card, an arcade CRT, an engineering spec sheet, and an editorial broadside.
 - **Wordmark.** The official wordmark from [omarchy.org/brand](https://omarchy.org/brand/),
   used at build time as a CSS mask over a gradient built from the live theme's
   variables — so it recolours with everything else. The gradient drifts across the
-  letterforms on a 90-second loop (`--sweep`, the only number to change for the pace).
+  letterforms on a 50-second loop (`--sweep`, the only number to change for the pace).
   It is a mask rather than an SVG gradient fill because only the CSS form can be
   animated and stopped for `prefers-reduced-motion`. Two details make it work: the
   colour sequence closes on the accent and sweeps at a flat 90°, so the repeating tiles
