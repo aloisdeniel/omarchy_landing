@@ -93,6 +93,8 @@ window.OM = (function () {
     return scope() || (prefersLight() ? "light" : "dark");
   }
 
+  /* anything that is not an explicit pool — "auto", null — clears the override,
+     which puts the draw back under the system appearance */
   function setScope(v) {
     if (v === "dark" || v === "light" || v === "all") write(SCOPE, v); else drop(SCOPE);
     return effectiveScope();

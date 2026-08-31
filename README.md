@@ -39,15 +39,17 @@ card, an arcade CRT, an engineering spec sheet, and an editorial broadside.
   unpins and draws a fresh theme on the spot; the row reads `ON` or `OFF`, and the
   status bar says `pinned` or `random each reload`.
 
-  That row also carries a `DARK / LIGHT / ALL` control for which pool the draw comes
-  from. It defaults to the system appearance and is only stored once you set it, so
-  the default keeps following the system. Picking a scope also unpins and redraws, and
-  leaves the picker open so pools can be compared.
+  That row also carries an `AUTO / DARK / LIGHT / ALL` control for which pool the draw
+  comes from. **Auto** is the default and stores nothing — it re-resolves against the
+  system on every load, so the page follows your desktop rather than freezing whatever
+  it happened to be on your first visit. The other three are overrides; **Auto** clears
+  the override and goes back to following the system. Picking any scope also unpins and
+  redraws, and leaves the picker open so pools can be compared.
 
   Three keys carry this: `omarchy.theme.pinned` is the deliberate choice and is what
-  survives a reload; `omarchy.random.scope` is the pool override, absent while
-  following the system; `omarchy.theme.last` only records what was on screen so the
-  next draw can avoid repeating it.
+  survives a reload; `omarchy.random.scope` is the pool override, absent while on Auto;
+  `omarchy.theme.last` only records what was on screen so the next draw can avoid
+  repeating it.
 - **Wordmark.** The official SVG wordmark from [omarchy.org/brand](https://omarchy.org/brand/),
   refilled at build time with a gradient whose stops are the live theme's CSS variables.
   The gradient is `userSpaceOnUse`, so it sweeps once across the whole wordmark rather

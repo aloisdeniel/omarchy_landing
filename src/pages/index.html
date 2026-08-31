@@ -404,7 +404,9 @@ footer .sig{color:var(--muted)}
            and nesting interactive elements is invalid */
         b = document.createElement("div");
         b.className = "fzi rnd";
-        var sc = OM.effectiveScope();
+        /* scope() is null while no override is stored, which is what "auto" means */
+        var active = OM.scope() || "auto";
+        var eff = OM.effectiveScope();
         b.innerHTML =
           '<button class="rgo" type="button">' + DICE +
             '<span class="md">' + (OM.isPinned() ? "off" : "on") + '</span>' +
@@ -412,9 +414,12 @@ footer .sig{color:var(--muted)}
             '<span class="wpn">a new theme every reload</span>' +
           '</button>' +
           '<span class="scope" role="group" aria-label="Pick random themes from">' +
-            ["dark","light","all"].map(function(v){
-              return '<button type="button" data-s="' + v + '" aria-pressed="' +
-                (v === sc) + '">' + v + "</button>";
+            ["auto","dark","light","all"].map(function(v){
+              var title = v === "auto"
+                ? 'title="Follow the system appearance — currently ' + eff + '"'
+                : 'title="Always pick a ' + (v === "all" ? "theme from all 22" : v + " theme") + '"';
+              return '<button type="button" data-s="' + v + '" ' + title +
+                ' aria-pressed="' + (v === active) + '">' + v + "</button>";
             }).join("") +
           "</span>";
         b.querySelector(".rgo").onclick = function(){ OM.randomize(); close(); };
