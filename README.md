@@ -50,10 +50,16 @@ card, an arcade CRT, an engineering spec sheet, and an editorial broadside.
   survives a reload; `omarchy.random.scope` is the pool override, absent while on Auto;
   `omarchy.theme.last` only records what was on screen so the next draw can avoid
   repeating it.
-- **Wordmark.** The official SVG wordmark from [omarchy.org/brand](https://omarchy.org/brand/),
-  refilled at build time with a gradient whose stops are the live theme's CSS variables.
-  The gradient is `userSpaceOnUse`, so it sweeps once across the whole wordmark rather
-  than restarting inside each of its 211 rectangles.
+- **Wordmark.** The official wordmark from [omarchy.org/brand](https://omarchy.org/brand/),
+  used at build time as a CSS mask over a gradient built from the live theme's
+  variables — so it recolours with everything else. The gradient drifts across the
+  letterforms on a 90-second loop (`--sweep`, the only number to change for the pace).
+  It is a mask rather than an SVG gradient fill because only the CSS form can be
+  animated and stopped for `prefers-reduced-motion`. Two details make it work: the
+  colour sequence closes on the accent and sweeps at a flat 90°, so the repeating tiles
+  meet without a seam and `0% → 200%` shifts by exactly one tile; and the glow sits on
+  a wrapper, since CSS applies filters *before* masks and a filter on the masked
+  element would be clipped away with the rest of its box.
 - **Buttons.** The flat row of fourteen links becomes four groups — Install, Build,
   Gather, Back it — each owning a different colour from the active theme.
 - **Type.** JetBrains Mono only, weights 100–800.
@@ -81,8 +87,9 @@ python3 -m http.server -d out 8000
   Artifacts, which supply their own `<!doctype>`/`<head>`/`<body>` wrapper.
 
 Pass `--debug` to add query-string helpers to the `out/` build, useful for
-screenshotting: `?theme=gruvbox` applies a theme on load, `?all=1` forces every reveal
-animation to its end state, `?flat=1` collapses the viewport-height hero.
+screenshotting: `?theme=gruvbox` applies a theme on load, `?t=45` freezes the wordmark
+sweep at that second of its cycle, `?all=1` forces every reveal animation to its end
+state, `?flat=1` collapses the viewport-height hero.
 
 The page is self-contained — every wallpaper is embedded as a data URI, so it runs with
 no network beyond the Google Fonts stylesheet. That puts it around 1.5 MB.

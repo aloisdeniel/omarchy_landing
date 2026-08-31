@@ -10,7 +10,7 @@ Emits two forms of each page:
   artifact/  the fragments with core.js inlined, for claude.ai Artifacts,
              which supply their own <!doctype>/<head>/<body> wrapper
 """
-import json, os, re, sys
+import base64, json, os, re, sys
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 PAGES = os.path.join(BASE, "pages")
@@ -32,35 +32,32 @@ addEventListener("load",function(){
   if(p.get("flat")){var s=document.createElement("style");
     s.textContent="#top{min-height:0!important}";document.head.appendChild(s);}
   if(p.get("theme")&&window.OM)OM.apply(p.get("theme"));
+  /* freeze the wordmark sweep at t seconds, for frame-by-frame screenshots.
+     forced !important so it also works where prefers-reduced-motion is on. */
+  if(p.get("t")!==null){var lg=document.querySelector("#logo i");
+    if(lg){var dur=getComputedStyle(lg).getPropertyValue("--sweep").trim()||"90s";
+      lg.style.setProperty("animation-duration",dur,"important");
+      lg.style.setProperty("animation-delay","-"+p.get("t")+"s","important");
+      lg.style.setProperty("animation-play-state","paused","important");}}
 });
 </script>"""
 
 
-def wordmark():
-    """The official wordmark from omarchy.org/brand/, refilled with a gradient
-    built from the live theme's CSS variables so it repaints with everything else."""
-    svg = open(os.path.join(BASE, "assets", "omarchy-wordmark.svg")).read().strip()
-    # userSpaceOnUse, not the default objectBoundingBox: the fill lives on the <g>,
-    # so a bounding-box gradient would restart inside every one of the 211 rects.
-    # These coordinates are the wordmark's own viewBox (4131x950).
-    grad = (
-        '<defs><linearGradient id="omgrad" gradientUnits="userSpaceOnUse"'
-        ' x1="0" y1="0" x2="4131" y2="333">'
-        '<stop offset="0" stop-color="var(--accent)"/>'
-        '<stop offset="0.34" stop-color="var(--magenta)"/>'
-        '<stop offset="0.62" stop-color="var(--cyan)"/>'
-        '<stop offset="1" stop-color="var(--green)"/>'
-        "</linearGradient></defs>"
-    )
-    svg = svg.replace('<g fill="#9ece6a"', '<g fill="url(#omgrad)"', 1)
-    svg = svg.replace(
-        '<svg ', '<svg id="logo" role="img" aria-label="Omarchy" ', 1
-    ).replace(
-        ' width="4131" height="950"', "", 1
-    )
-    # inject the gradient definition immediately after the opening <svg ...>
-    i = svg.index(">") + 1
-    return svg[:i] + grad + svg[i:]
+def wordmark_markup():
+    """The wordmark is a CSS gradient masked to the official shape, not an SVG
+    with a gradient fill: only the CSS form can be animated and paused for
+    prefers-reduced-motion. The glow sits on the wrapper because CSS applies
+    filters *before* masks, so a filter on the masked element would be clipped
+    away with everything outside the letterforms."""
+    return '<span id="logo" role="img" aria-label="Omarchy"><i></i></span>'
+
+
+def wordmark_url():
+    """The official wordmark from omarchy.org/brand/, as a mask image. Only its
+    alpha matters, so the source fill colour is irrelevant. base64 rather than
+    percent-encoding, to keep quotes and hashes out of the CSS."""
+    svg = open(os.path.join(BASE, "assets", "omarchy-wordmark.svg"), "rb").read().strip()
+    return 'url("data:image/svg+xml;base64,' + base64.b64encode(svg).decode() + '")'
 
 
 def split_head(fragment):
@@ -111,7 +108,8 @@ def main():
     for page in names:
         src = open(os.path.join(PAGES, page)).read()
         fragment = src.replace("<!--CORE-->", "<script>\n" + core + "\n</script>")
-        fragment = fragment.replace("<!--WORDMARK-->", wordmark())
+        fragment = fragment.replace("<!--WORDMARK-->", wordmark_markup())
+        fragment = fragment.replace("/*WORDMARK-URL*/", wordmark_url())
 
         open(os.path.join(ART, page), "w").write(fragment)
 

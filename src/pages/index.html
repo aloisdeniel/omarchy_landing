@@ -80,9 +80,24 @@ hr.rule{border:0;height:1px;margin:2.2rem 0;
 .newsbar .tag{color:var(--yellow);font-weight:700;letter-spacing:.16em;text-transform:uppercase;font-size:10px}
 .newsbar .arw{color:var(--yellow)}
 
-#logo{display:block;width:100%;max-width:660px;height:auto;
+/* wrapper carries the glow: filters render before masks, so a filter on the
+   masked element itself would be clipped away with the rest of the box */
+#logo{display:block;width:100%;max-width:660px;aspect-ratio:4131/950;
   margin:clamp(20px,4vh,36px) 0 0;
   filter:drop-shadow(0 0 18px color-mix(in oklab,var(--accent) 34%,transparent))}
+#logo i{display:block;width:100%;height:100%;
+  /* the colour sequence closes on --accent so the tiles meet seamlessly, and the
+     sweep is a flat 90deg so every tile edge matches at every height */
+  background-image:linear-gradient(90deg,
+    var(--accent), var(--magenta), var(--cyan), var(--green), var(--accent));
+  background-size:200% 100%;
+  -webkit-mask:/*WORDMARK-URL*/ 0 0/contain no-repeat;
+  mask:/*WORDMARK-URL*/ 0 0/contain no-repeat;
+  /* one full colour cycle; the only number to touch to change the pace */
+  --sweep:90s;
+  animation:wordmark-drift var(--sweep) linear infinite}
+/* 0% -> 200% shifts by exactly one tile width, so the loop has no jump */
+@keyframes wordmark-drift{from{background-position:0 50%}to{background-position:200% 50%}}
 .tagline{margin:1.4rem 0 0;font-size:clamp(13px,1.5vw,16px);letter-spacing:.02em;color:color-mix(in oklab,var(--fg) 88%,var(--bg))}
 .tagline a{color:var(--accent);text-decoration-color:color-mix(in oklab,var(--accent) 45%,transparent);text-underline-offset:3px}
 .lead{margin:.9rem 0 0;max-width:66ch;font-size:clamp(14px,1.55vw,17px);line-height:1.72;
