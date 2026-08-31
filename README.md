@@ -27,11 +27,13 @@ card, an arcade CRT, an engineering spec sheet, and an editorial broadside.
   lives in page *chrome*, never as a content section. Press <kbd>T</kbd> to open it,
   <kbd>[</kbd> and <kbd>]</kbd> to step through.
 - **A different theme every load.** The page picks one at random on each visit, so the
-  collection is the first thing you see. `localStorage` holds only the theme you were
-  last shown, and that one is excluded from the next draw — with 22 themes a plain
-  random pick would repeat about one reload in twenty-two, which reads as a bug rather
-  than as chance. A theme you choose by hand holds for that visit and is not restored
-  afterwards.
+  collection is the first thing you see — drawn only from the themes matching your
+  system appearance (17 dark, 5 light), so a dark desktop is never flashed a white
+  page. `localStorage` holds only the theme you were last shown, and that one is
+  excluded from the next draw; within a pool this small a plain random pick repeats
+  often enough that a reload changing nothing reads as a bug rather than as chance.
+  A theme you choose by hand ignores both rules, holds for that visit, and is not
+  restored afterwards.
 - **Wordmark.** The official SVG wordmark from [omarchy.org/brand](https://omarchy.org/brand/),
   refilled at build time with a gradient whose stops are the live theme's CSS variables.
   The gradient is `userSpaceOnUse`, so it sweeps once across the whole wordmark rather
@@ -63,9 +65,8 @@ python3 -m http.server -d out 8000
   Artifacts, which supply their own `<!doctype>`/`<head>`/`<body>` wrapper.
 
 Pass `--debug` to add query-string helpers to the `out/` build, useful for
-screenshotting: `?theme=gruvbox` applies a theme on load, `?light=1` stamps the light
-artifact theme, `?all=1` forces every reveal animation to its end state, `?flat=1`
-collapses the viewport-height hero.
+screenshotting: `?theme=gruvbox` applies a theme on load, `?all=1` forces every reveal
+animation to its end state, `?flat=1` collapses the viewport-height hero.
 
 The page is self-contained — every wallpaper is embedded as a data URI, so it runs with
 no network beyond the Google Fonts stylesheet. That puts it around 1.5 MB.

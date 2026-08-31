@@ -62,14 +62,27 @@ window.OM = (function () {
 
   function onChange(fn) { listeners.push(fn); if (current) fn(current); }
 
+  function prefersLight() {
+    var stamped = document.documentElement.getAttribute("data-theme");
+    if (stamped === "light") return true;
+    if (stamped === "dark") return false;
+    return !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches);
+  }
+
   /* Every load lands on a different theme, so the collection is the first thing
-     you see. The previous one is excluded: with 22 themes a plain random pick
-     repeats about one reload in twenty-two, which just reads as broken. */
+     you see — but only ever from the half that matches the system appearance,
+     so a dark desktop never gets flashed a white page. The previous theme is
+     excluded too: within a pool this small a plain random pick repeats often
+     enough that a reload changing nothing reads as broken. A theme chosen by
+     hand ignores all of this. */
   function boot() {
     var prev = null;
     try { prev = localStorage.getItem(KEY); } catch (e) {}
-    var pool = THEMES.filter(function (t) { return t.id !== prev; });
-    if (!pool.length) pool = THEMES;
+    var mode = prefersLight() ? "light" : "dark";
+    var inMode = THEMES.filter(function (t) { return t.mode === mode; });
+    if (!inMode.length) inMode = THEMES;                  /* should never happen */
+    var pool = inMode.filter(function (t) { return t.id !== prev; });
+    if (!pool.length) pool = inMode;                      /* only one in this mode */
     return apply(pool[Math.floor(Math.random() * pool.length)].id);
   }
 

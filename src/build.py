@@ -28,7 +28,6 @@ DEBUG_HELPER = """<script>
 /* local screenshot helpers; inert without a query string */
 addEventListener("load",function(){
   var p=new URLSearchParams(location.search);
-  if(p.get("light"))document.documentElement.setAttribute("data-theme","light");
   if(p.get("all"))document.querySelectorAll(".rv,.blk,.rule,.card").forEach(function(n){n.classList.add("in")});
   if(p.get("flat")){var s=document.createElement("style");
     s.textContent="#top{min-height:0!important}";document.head.appendChild(s);}
